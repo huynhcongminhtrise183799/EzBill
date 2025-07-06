@@ -1,0 +1,6 @@
+@EzBill_HostAddress = http://localhost:5137
+
+GET {{EzBill_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
