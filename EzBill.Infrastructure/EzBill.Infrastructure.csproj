@@ -7,11 +7,13 @@
   </PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5"/>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5"/>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.17" />
 
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\EzBill.Application\EzBill.Application.csproj" />
 	  <ProjectReference Include="..\EzBill.Domain\EzBill.Domain.csproj" />
 	</ItemGroup>
 </Project>

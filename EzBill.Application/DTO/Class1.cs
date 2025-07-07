@@ -1,4 +1,4 @@
-﻿namespace EzBill.Application
+﻿namespace EzBill.Application.DTO
 {
     public class Class1
     {
