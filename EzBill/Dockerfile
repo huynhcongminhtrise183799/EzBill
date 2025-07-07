@@ -1,20 +1,29 @@
-﻿# Stage 1 - Build
+﻿# ============================
+# Stage 1: Restore + Build
+# ============================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY ["EzBill.csproj", "./"]
-RUN dotnet restore "EzBill.csproj"
+# Copy csproj files
+COPY EzBill/EzBill.csproj ./EzBill/
+COPY EzBill.Application/EzBill.Application.csproj ./EzBill.Application/
+COPY EzBill.Domain/EzBill.Domain.csproj ./EzBill.Domain/
+COPY EzBill.Infrastructure/EzBill.Infrastructure.csproj ./EzBill.Infrastructure/
 
+# Restore
+RUN dotnet restore ./EzBill/EzBill.csproj
+
+# Copy full source
 COPY . .
-RUN dotnet build "EzBill.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Stage 2 - Publish
-FROM build AS publish
-RUN dotnet publish "EzBill.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+# Publish
+RUN dotnet publish EzBill/EzBill.csproj -c Release -o /app/publish
 
-# Stage 3 - Runtime
+# ============================
+# Stage 2: Runtime
+# ============================
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
+
 ENTRYPOINT ["dotnet", "EzBill.dll"]

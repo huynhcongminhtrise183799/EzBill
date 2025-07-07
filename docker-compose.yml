@@ -1,18 +1,18 @@
-﻿version: "3.9"
+version: "3.9"
 
 services:
   ezbill-api:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: ezbill-api:latest        
+      dockerfile: EzBill/Dockerfile
+    image: ezbill-api:latest
     container_name: ezbill-api
     ports:
       - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Host=ezbill-db;Port=5432;Database=ezbill_db;Username=postgres;Password=paavag2481L@
+      - ConnectionStrings__DefaultConnection=Host=ezbill-db;Port=5432;Database=ezbill_db;Username=postgres;Password=yourpassword
     depends_on:
       - ezbill-db
 
@@ -22,7 +22,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: paavag2481L@
+      POSTGRES_PASSWORD: yourpassword
       POSTGRES_DB: ezbill_db
     ports:
       - "5432:5432"
