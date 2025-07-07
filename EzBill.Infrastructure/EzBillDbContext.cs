@@ -37,7 +37,7 @@ namespace EzBill.Infrastructure
 
                 entity.HasOne(e => e.Account)
                       .WithMany(e => e.Trip)
-                      .HasForeignKey(e => e.TripId)
+                      .HasForeignKey(e => e.CreatedBy)
                       .HasConstraintName("FK_TRIP_ACCOUNT");
             });
 

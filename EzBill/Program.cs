@@ -83,6 +83,11 @@ namespace EzBill
             builder.Services.AddScoped<IAccountRepository, AccountRepository>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ITripRepository, TripRepository>();
+            builder.Services.AddScoped<ITripService, TripService>();
+            builder.Services.AddScoped<IEventRepository, EventRepository>();
+            builder.Services.AddScoped<IEventService, EventService>();
+
 
             var app = builder.Build();
 

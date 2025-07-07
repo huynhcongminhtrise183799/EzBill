@@ -3,6 +3,7 @@ using System;
 using EzBill.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EzBill.Infrastructure.Migrations
 {
     [DbContext(typeof(EzBillDbContext))]
-    partial class EzBillDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250707164635_UpdateTableEvent")]
+    partial class UpdateTableEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,9 +56,8 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<double>("AmountOriginal")
                         .HasColumnType("double precision");
 
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<char>("Currency")
+                        .HasColumnType("character(1)");
 
                     b.Property<DateOnly>("EventDate")
                         .HasColumnType("date");

@@ -4,17 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EzBill.Domain.Entity
+namespace EzBill.Application.DTO
 {
-    public class Event
+    public class CreateEventDTO
     {
-        public Guid EventId { get; set; }
-
         public string EventName { get; set; }
 
         public string EventDescription { get; set; }
-
-        public DateOnly EventDate { get; set; }
 
         public string? ReceiptUrl { get; set; }
 
@@ -29,14 +25,11 @@ namespace EzBill.Domain.Entity
         public double? ExchangeRate { get; set; }
         public double AmountInTripCurrency { get; set; }
 
+        public List<Event_Used_DTO> Event_Used { get; set; }
+    }
 
-
-        public Account Account { get; set; }
-
-        public Trip Trip { get; set; }
-
-        public virtual ICollection<Event_Use> Event_Use { get; set; }
-        public virtual ICollection<TaxRefund> TaxRefunds { get; set; }
-
+    public class Event_Used_DTO
+    {
+        public Guid AccountId { get; set; }
     }
 }
