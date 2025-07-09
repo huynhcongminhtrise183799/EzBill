@@ -35,7 +35,7 @@ namespace EzBill.Infrastructure.Service
                 new Claim(ClaimTypes.Email, account.Email),
                 // Add more claims as needed
             }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(10),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(keyBytes),
                     SecurityAlgorithms.HmacSha256Signature
