@@ -56,7 +56,7 @@ namespace EzBill.Application.Service
                     break;
 
                 default:
-                    throw new InvalidOperationException("Loại SplitType không hợp lệ.");
+                    throw new InvalidOperationException("Loại chia tiền không hợp lệ.");
             }
 
             try
