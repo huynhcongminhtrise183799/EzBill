@@ -1,5 +1,6 @@
 ﻿
 using EzBill.Application.IService;
+using EzBill.Application.Service;
 using EzBill.Domain.IRepository;
 using EzBill.Infrastructure;
 using EzBill.Infrastructure.Repository;
@@ -87,6 +88,8 @@ namespace EzBill
             builder.Services.AddScoped<ITripService, TripService>();
             builder.Services.AddScoped<IEventRepository, EventRepository>();
             builder.Services.AddScoped<IEventService, EventService>();
+            builder.Services.AddScoped<ITaxRefundService, TaxRefundService>();
+            builder.Services.AddScoped<ITaxRefundRepository, TaxRefundRepository>();
 
 
             var app = builder.Build();
