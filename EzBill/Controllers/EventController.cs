@@ -44,7 +44,10 @@ namespace EzBill.Controllers
             var result = await _eventService.AddEvent(@event);
             if (result)
             {
-                return Ok("Add successfully");
+                return Ok(new
+                {
+                    eventId = eventId
+                });
             }
             return BadRequest("add failed");
         }

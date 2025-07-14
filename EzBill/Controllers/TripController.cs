@@ -49,7 +49,10 @@ namespace EzBill.Controllers
             var result = await _tripService.AddTrip(trip);
             if (result)
             {
-                return Ok("Add successfully");
+                return Ok(new
+                {
+                    tripId = tripId
+                });
             }
             return BadRequest("Have error");
         }
