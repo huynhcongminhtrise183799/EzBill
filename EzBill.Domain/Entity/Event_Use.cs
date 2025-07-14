@@ -11,6 +11,8 @@ namespace EzBill.Domain.Entity
         public Guid EventId { get; set; }
 
         public Guid AccountId { get; set; }
+       
+        public double? Amount { get; set; }
 
         public Event Event  { get; set; }
 

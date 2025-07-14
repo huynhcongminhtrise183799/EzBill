@@ -14,6 +14,8 @@ namespace EzBill.Domain.Entity
 
         public string Password { get; set; }
 
+        public string? AvatarUrl { get; set; }
+
         public virtual ICollection<Trip> Trip { get; set; }
 
         public virtual ICollection<TripMember> TripMembers { get; set; }

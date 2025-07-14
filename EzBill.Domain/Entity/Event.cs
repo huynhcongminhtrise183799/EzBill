@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace EzBill.Domain.Entity
 {
+    public enum SplitType
+    {
+        
+    }
     public class Event
     {
         public Guid EventId { get; set; }
@@ -30,13 +34,14 @@ namespace EzBill.Domain.Entity
         public double AmountInTripCurrency { get; set; }
 
 
+        public string SplitType { get; set; } 
+
 
         public Account Account { get; set; }
 
         public Trip Trip { get; set; }
 
         public virtual ICollection<Event_Use> Event_Use { get; set; }
-        public virtual ICollection<TaxRefund> TaxRefunds { get; set; }
 
     }
 }

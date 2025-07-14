@@ -19,8 +19,10 @@ namespace EzBill.Domain.Entity
     {
         public Guid TaxRefundId { get; set; }
 
-        public Guid EventId { get; set; }
-        
+        //public Guid EventId { get; set; }
+
+        public Guid TripId { get; set; }
+
         public string ProductName { get; set; }
 
         public double OriginalAmount { get; set; }
@@ -41,7 +43,9 @@ namespace EzBill.Domain.Entity
         //public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         //public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        public Event Event { get; set; }
+        //public Event Event { get; set; }
+
+        public Trip Trip { get; set; }
 
         public Account Account { get; set; }
 

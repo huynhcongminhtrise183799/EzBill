@@ -27,5 +27,8 @@ namespace EzBill.Domain.Entity
         public virtual ICollection<PaymentHistory> PaymentHistories { get; set; }
 
         public virtual ICollection<Event> Events { get; set; }
+
+        public virtual ICollection<TaxRefund> TaxRefunds { get; set; }
+
     }
 }
