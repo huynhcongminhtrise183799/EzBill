@@ -1,4 +1,5 @@
-﻿using EzBill.Application.IService;
+﻿using EzBill.Application.DTO.Settlement;
+using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -18,9 +19,9 @@ namespace EzBill.Controllers
         }
 
         [HttpPost("generate")]
-        public async Task<IActionResult> GenerateSettlements([FromBody] Guid tripId)
+        public async Task<IActionResult> GenerateSettlements([FromBody] GenerateSettlementRequest request)
         {
-            var result = await _settlementService.GenerateSettlementsAsync(tripId);
+            var result = await _settlementService.GenerateSettlementsAsync(request.TripId);
             return Ok(result);
         }
 

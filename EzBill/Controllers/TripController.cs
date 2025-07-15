@@ -56,5 +56,26 @@ namespace EzBill.Controllers
             }
             return BadRequest("Have error");
         }
+
+        [HttpGet("account/{accountId}")]
+        public async Task<IActionResult> GetTripsByAccount(Guid accountId)
+        {
+            var trips = await _tripService.GetTripsForAccountAsync(accountId);
+
+            if (trips == null || trips.Count == 0)
+                return NotFound("No trips found for this account.");
+
+            return Ok(trips);
+        }
+
+        [HttpGet("{tripId}/details")]
+        public async Task<IActionResult> GetTripDetails(Guid tripId)
+        {
+            var tripDetails = await _tripService.GetTripDetailsAsync(tripId);
+            if (tripDetails == null)
+                return NotFound("Trip not found");
+
+            return Ok(tripDetails);
+        }
     }
 }
