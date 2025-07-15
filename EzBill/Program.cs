@@ -90,6 +90,8 @@ namespace EzBill
             builder.Services.AddScoped<IEventService, EventService>();
             builder.Services.AddScoped<ITaxRefundService, TaxRefundService>();
             builder.Services.AddScoped<ITaxRefundRepository, TaxRefundRepository>();
+            builder.Services.AddScoped<ISettlementService, SettlementService>();
+            builder.Services.AddScoped<ISettlementRepository, SettlementRepository>();
 
 
             var app = builder.Build();

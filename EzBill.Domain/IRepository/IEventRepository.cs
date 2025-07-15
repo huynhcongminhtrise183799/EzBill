@@ -9,6 +9,9 @@ namespace EzBill.Domain.IRepository
 {
     public interface IEventRepository
     {
-        Task<bool> AddEvent(Event @event);
+        Task AddEventAsync(Event evt);
+        Task SaveChangesAsync();
+        Task<List<Event>> GetByTripIdAsync(Guid tripId);
+
     }
 }

@@ -25,11 +25,12 @@ namespace EzBill.API.Controllers
             {
                 var taxRefund = new TaxRefund
                 {
+                    TripId =dto.TripId,
                     ProductName = dto.ProductName,
                     OriginalAmount = dto.OriginalAmount,
                     RefundPercent = dto.RefundPercent,
                     RefundedBy = dto.RefundedBy,
-                    SplitType = (TaxRefundSplitType)dto.SplitType,
+                    SplitType = dto.SplitType,
                     TaxRefund_Usages = dto.TaxRefund_Usages.Select(u => new TaxRefund_Usage
                     {
                         AccountId = u.AccountId,
@@ -61,6 +62,12 @@ namespace EzBill.API.Controllers
             {
                 return BadRequest(new { Message = $"Xử lý thất bại: {ex.Message}" });
             }
+        }
+        [HttpGet("by-trip/{tripId}")]
+        public async Task<IActionResult> GetTaxRefundsByTrip(Guid tripId)
+        {
+            var result = await _taxRefundService.GetTaxRefundsByTripAsync(tripId);
+            return Ok(result);
         }
     }
 }

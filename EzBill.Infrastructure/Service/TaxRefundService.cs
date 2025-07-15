@@ -1,4 +1,5 @@
-﻿using EzBill.Application.IService;
+﻿using EzBill.Application.DTO.TaxRefund;
+using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using Microsoft.EntityFrameworkCore;
@@ -25,12 +26,12 @@ namespace EzBill.Application.Service
             if (taxRefund.TaxRefundId == Guid.Empty)
                 taxRefund.TaxRefundId = Guid.NewGuid();
 
-            if (taxRefund.EventId == Guid.Empty || !(await _taxRefundRepository.EventExistsAsync(taxRefund.EventId)))
+            if (taxRefund.TripId == Guid.Empty || !(await _taxRefundRepository.TripExistsAsync(taxRefund.TripId)))
             {
-                var fallbackEventId = await _taxRefundRepository.GetAnyEventIdAsync();
+                var fallbackEventId = await _taxRefundRepository.GetAnyTripIdAsync();
                 if (fallbackEventId == Guid.Empty)
-                    throw new InvalidOperationException("Không tìm thấy Event hợp lệ để gắn vào TaxRefund.");
-                taxRefund.EventId = fallbackEventId;
+                    throw new InvalidOperationException("Không tìm thấy Trip hợp lệ để gắn vào TaxRefund.");
+                taxRefund.TripId = fallbackEventId;
             }
 
             foreach (var usage in taxRefund.TaxRefund_Usages)
@@ -41,7 +42,9 @@ namespace EzBill.Application.Service
             taxRefund.RefundAmount = Math.Round(
                 taxRefund.OriginalAmount * taxRefund.RefundPercent / 100, 0);
 
-            switch (taxRefund.SplitType)
+            var splitType = Enum.Parse<TaxRefundSplitType>(taxRefund.SplitType);
+
+            switch (splitType)
             {
                 case TaxRefundSplitType.EQUAL:
                     SplitEqual(taxRefund);
@@ -116,6 +119,27 @@ namespace EzBill.Application.Service
                     u.AmountReceived = 0;
                 }
             }
+        }
+        public async Task<List<TaxRefundDto>> GetTaxRefundsByTripAsync(Guid tripId)
+        {
+            var taxRefunds = await _taxRefundRepository.GetByTripIdAsync(tripId);
+
+            return taxRefunds.Select(r => new TaxRefundDto
+            {
+                TaxRefundId = r.TaxRefundId,
+                ProductName = r.ProductName,
+                OriginalAmount = r.OriginalAmount,
+                RefundPercent = r.RefundPercent,
+                RefundAmount = r.RefundAmount,
+                RefundedBy = r.RefundedBy,
+                SplitType = r.SplitType,
+                Beneficiaries = r.TaxRefund_Usages.Select(u => new RefundBeneficiaryDto
+                {
+                    AccountId = u.AccountId,
+                    Ratio = u.Ratio ?? 0,
+                    AmountReceived = u.AmountReceived
+                }).ToList()
+            }).ToList();
         }
     }
 }

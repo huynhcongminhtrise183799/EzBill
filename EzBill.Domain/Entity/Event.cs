@@ -8,7 +8,7 @@ namespace EzBill.Domain.Entity
 {
     public enum SplitType
     {
-        
+        ONE_FOR_ALL, EQUAL, RATIO
     }
     public class Event
     {
@@ -33,9 +33,7 @@ namespace EzBill.Domain.Entity
         public double? ExchangeRate { get; set; }
         public double AmountInTripCurrency { get; set; }
 
-
         public string SplitType { get; set; } 
-
 
         public Account Account { get; set; }
 

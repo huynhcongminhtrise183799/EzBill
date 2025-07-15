@@ -36,7 +36,7 @@ namespace EzBill.Domain.Entity
 
         public bool IsGroupMoneyUsed { get; set; }
 
-        public TaxRefundSplitType SplitType { get; set; }
+        public string SplitType { get; set; }
 
         //public TaxRefundStatus Status { get; set; } = TaxRefundStatus.PENDING;
 

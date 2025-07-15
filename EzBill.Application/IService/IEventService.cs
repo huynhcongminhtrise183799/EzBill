@@ -1,4 +1,5 @@
-﻿using EzBill.Domain.Entity;
+﻿using EzBill.Application.DTO.Event;
+using EzBill.Domain.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,8 @@ namespace EzBill.Application.IService
 {
     public interface IEventService
     {
-        Task<bool> AddEvent(Event @event);
+        Task<CreateEventResponse> CreateEventAsync(CreateEventRequest request);
+        Task<List<EventDto>> GetEventsByTripAsync(Guid tripId);
 
     }
 }

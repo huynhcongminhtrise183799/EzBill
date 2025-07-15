@@ -125,7 +125,7 @@ namespace EzBill.Infrastructure
                 entity.HasOne(e => e.Trip)
                      .WithMany(e => e.TaxRefunds)
                      .HasForeignKey(e => e.TripId)
-                     .HasConstraintName("FK_TaxRefund_Event");
+                     .HasConstraintName("FK_TaxRefund_Trip");
 
                 entity.HasOne(e => e.Account)
                      .WithMany(e => e.TaxRefunds)
