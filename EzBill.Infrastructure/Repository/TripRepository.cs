@@ -44,5 +44,30 @@ namespace EzBill.Infrastructure.Repository
                 .Include(t => t.TripMembers)
                 .FirstOrDefaultAsync(t => t.TripId == tripId);
         }
+        public async Task<List<Trip>> GetTripsByAccountIdAsync(Guid accountId)
+        {
+            var trips = await _context.trips
+                .Include(t => t.TripMembers)               
+                    .ThenInclude(tm => tm.Account)         
+                .Where(t => t.CreatedBy == accountId ||
+                            t.TripMembers.Any(tm => tm.AccountId == accountId))
+                .ToListAsync();
+
+            return trips;
+        }
+        public async Task<Trip> GetTripDetailsByIdAsync(Guid tripId)
+        {
+            var trip = await _context.trips
+                .Include(t => t.TripMembers)
+                    .ThenInclude(tm => tm.Account)
+                .Include(t => t.Events)
+                    .ThenInclude(e => e.Event_Use)
+                .Include(t => t.TaxRefunds)
+                    .ThenInclude(tr => tr.TaxRefund_Usages)
+                .FirstOrDefaultAsync(t => t.TripId == tripId);
+
+            return trip;
+        }
+
     }
 }

@@ -15,5 +15,9 @@ namespace EzBill.Domain.IRepository
 
         Task<Trip?> GetByIdAsync(Guid tripId);
 
+        Task<List<Trip>> GetTripsByAccountIdAsync(Guid accountId);
+        Task<Trip> GetTripDetailsByIdAsync(Guid tripId);
+
+
     }
 }
