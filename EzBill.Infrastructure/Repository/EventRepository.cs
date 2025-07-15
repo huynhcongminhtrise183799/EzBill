@@ -1,9 +1,9 @@
 ﻿using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EzBill.Infrastructure.Repository
@@ -17,19 +17,22 @@ namespace EzBill.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<bool> AddEvent(Event @event)
+        public async Task AddEventAsync(Event evt)
         {
-            try
-            {
-                await _context.Events.AddAsync(@event);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception)
-            {
+            await _context.Events.AddAsync(evt);
+        }
 
-                return false;
-            }
+        public async Task<List<Event>> GetByTripIdAsync(Guid tripId)
+        {
+            return await _context.Events
+                .Include(e => e.Event_Use)
+                .Where(e => e.TripId == tripId)
+                .ToListAsync();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

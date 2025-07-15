@@ -14,5 +14,10 @@ namespace EzBill.Domain.IRepository
         Task<List<Account>> GetAll();
 
         Task<Account> GetProfile(Guid accountId);
+
+        Task<Account?> GetByIdAsync(Guid accountId);
+        Task<List<Account>> GetByIdsAsync(IEnumerable<Guid> accountIds);
+
+
     }
 }

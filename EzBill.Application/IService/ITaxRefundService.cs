@@ -1,4 +1,5 @@
-﻿using EzBill.Domain.Entity;
+﻿using EzBill.Application.DTO.TaxRefund;
+using EzBill.Domain.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,7 @@ namespace EzBill.Application.IService
     public interface ITaxRefundService
     {
         Task ProcessTaxRefundAsync(TaxRefund taxRefund);
+        Task<List<TaxRefundDto>> GetTaxRefundsByTripAsync(Guid tripId);
+
     }
 }

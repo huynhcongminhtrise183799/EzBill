@@ -10,10 +10,11 @@ namespace EzBill.Domain.IRepository
     public interface ITaxRefundRepository
     {
         Task AddAsync(TaxRefund taxRefund);
+        Task<List<TaxRefund>> GetByTripIdAsync(Guid tripId);
         Task<TaxRefund?> GetByIdAsync(Guid taxRefundId);
         Task<bool> ExistsAsync(Guid taxRefundId);
-        Task<bool> EventExistsAsync(Guid eventId);
-        Task<Guid> GetAnyEventIdAsync();
+        Task<bool> TripExistsAsync(Guid tripId);
+        Task<Guid> GetAnyTripIdAsync();
         Task SaveChangesAsync();
     }
 }

@@ -10,5 +10,10 @@ namespace EzBill.Domain.IRepository
     public interface ITripRepository
     {
         Task<bool> AddTrip(Trip trip);
+
+        Task<List<TripMember>> GetTripMembersAsync(Guid tripId);
+
+        Task<Trip?> GetByIdAsync(Guid tripId);
+
     }
 }

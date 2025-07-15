@@ -42,5 +42,15 @@ namespace EzBill.Infrastructure.Repository
             }
             return result;
         }
+        public async Task<Account?> GetByIdAsync(Guid accountId)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == accountId);
+        }
+        public async Task<List<Account>> GetByIdsAsync(IEnumerable<Guid> accountIds)
+        {
+            return await _context.Accounts
+                .Where(a => accountIds.Contains(a.AccountId))
+                .ToListAsync();
+        }
     }
 }

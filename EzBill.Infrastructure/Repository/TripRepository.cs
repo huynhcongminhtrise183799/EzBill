@@ -1,5 +1,6 @@
 ﻿using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,18 @@ namespace EzBill.Infrastructure.Repository
 
                 return false;
             }
+        }
+        public async Task<List<TripMember>> GetTripMembersAsync(Guid tripId)
+        {
+            return await _context.TripMembers
+                .Where(tm => tm.TripId == tripId)
+                .ToListAsync();
+        }
+        public async Task<Trip?> GetByIdAsync(Guid tripId)
+        {
+            return await _context.trips
+                .Include(t => t.TripMembers)
+                .FirstOrDefaultAsync(t => t.TripId == tripId);
         }
     }
 }
