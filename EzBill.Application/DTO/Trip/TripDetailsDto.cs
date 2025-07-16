@@ -20,6 +20,7 @@ namespace EzBill.Application.DTO.Trip
 
         public List<EventContributionDto> EventContributions { get; set; } 
         public List<TaxRefundDto> TaxRefunds { get; set; }
+        public List<TripMemberDto> Members { get; set; }
     }
     public class EventContributionDto
     {

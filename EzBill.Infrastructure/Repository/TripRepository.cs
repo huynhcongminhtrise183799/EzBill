@@ -59,11 +59,15 @@ namespace EzBill.Infrastructure.Repository
         {
             var trip = await _context.trips
                 .Include(t => t.TripMembers)
-                    .ThenInclude(tm => tm.Account)
+                    .ThenInclude(tm => tm.Account)                 
                 .Include(t => t.Events)
-                    .ThenInclude(e => e.Event_Use)
+                    .ThenInclude(e => e.Event_Use)                 
+                .Include(t => t.Events)
+                    .ThenInclude(e => e.Account)                   
                 .Include(t => t.TaxRefunds)
-                    .ThenInclude(tr => tr.TaxRefund_Usages)
+                    .ThenInclude(tr => tr.TaxRefund_Usages)        
+                .Include(t => t.TaxRefunds)
+                    .ThenInclude(tr => tr.Account)                 
                 .FirstOrDefaultAsync(t => t.TripId == tripId);
 
             return trip;

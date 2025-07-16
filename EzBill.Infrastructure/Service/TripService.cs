@@ -79,6 +79,13 @@ namespace EzBill.Infrastructure.Service
                 }).ToList()
             }).ToList();
 
+            var members = trip.TripMembers.Select(m => new TripMemberDto
+            {
+                AccountId = m.AccountId,
+                Email = m.Account?.Email ?? "",
+                Status = m.Status
+            }).ToList();
+
             return new TripDetailsDto
             {
                 TripName = trip.TripName,
@@ -89,7 +96,8 @@ namespace EzBill.Infrastructure.Service
                 TotalTaxRefundAmount = totalTaxRefundAmount,
                 TotalUsedAmount = totalUsedAmount,
                 EventContributions = eventContributions,
-                TaxRefunds = taxRefunds
+                TaxRefunds = taxRefunds,
+                Members = members
             };
         }
 
