@@ -31,6 +31,7 @@ namespace EzBill.Infrastructure.Service
 
             var tripDtos = trips.Select(t => new TripDto
             {
+                TripId = t.TripId,
                 TripName = t.TripName,
                 StartDate = t.StartDate,
                 EndDate = t.EndDate,
