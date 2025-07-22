@@ -43,10 +43,6 @@ namespace EzBill.Controllers
         public async Task<IActionResult> GetSettlementsByDebtor(Guid id)
         {
             var result = await _settlementService.GetByDebtorIdAsync(id);
-            if (result == null || result.Count == 0)
-            {
-                return BadRequest("No settlements found for the specified debtor.");
-            }
             return Ok(result);
         }
 

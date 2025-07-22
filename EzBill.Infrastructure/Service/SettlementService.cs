@@ -99,7 +99,12 @@ namespace EzBill.Application.Service
 
         public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
         {
-            return await _settlementRepository.GetByDebtorIdAsync(debtorId);
+            var result =  await _settlementRepository.GetByDebtorIdAsync(debtorId);
+            if(result == null)
+            {
+                return new List<Settlement>();
+            }
+            return result;
         }
 
         public async Task<List<SettlementResultDto>> GetSettlementsByTripAsync(Guid tripId)
