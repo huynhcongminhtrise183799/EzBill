@@ -19,8 +19,8 @@ namespace EzBill.Infrastructure.Service
 
         public async Task<CreateEventResponse> CreateEventAsync(CreateEventRequest request)
         {
-            double exchangeRate = request.ExchangeRate ?? 26000;
-            double totalAmount = request.Currency.ToUpper() == "USD"
+            double exchangeRate = (double)request.ExchangeRate;
+            double totalAmount = request.Currency.ToUpper() != "VND"
                 ? request.AmountOriginal * exchangeRate
                 : request.AmountOriginal;
 
