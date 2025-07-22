@@ -57,7 +57,7 @@ namespace EzBill.Controllers
             return BadRequest("Have error");
         }
 
-        [HttpGet("account/{accountId}")]
+        [HttpGet("trip/account/{accountId}")]
         public async Task<IActionResult> GetTripsByAccount(Guid accountId)
         {
             var trips = await _tripService.GetTripsForAccountAsync(accountId);

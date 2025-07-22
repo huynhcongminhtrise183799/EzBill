@@ -9,5 +9,8 @@ namespace EzBill.Application.IService
         Task<List<SettlementResultDto>> GenerateSettlementsAsync(Guid tripId);
         Task<List<SettlementResultDto>> GetSettlementsByTripAsync(Guid tripId);
         Task UpdateSettlementStatusAsync(Guid settlementId, SettlementStatus status);
+
+        Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId);
+
     }
 }

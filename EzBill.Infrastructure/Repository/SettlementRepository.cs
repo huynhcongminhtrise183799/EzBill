@@ -47,5 +47,10 @@ namespace EzBill.Infrastructure.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
+        {
+            return await _context.Settlements.Where(s => s.FromAccountId == debtorId && s.Status.ToLower() == SettlementStatus.UNPAID.ToString().ToLower()).ToListAsync();
+        }
     }
 }

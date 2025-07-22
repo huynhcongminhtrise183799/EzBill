@@ -9,5 +9,7 @@ namespace EzBill.Domain.IRepository
         Task AddRangeAsync(List<Settlement> settlements);
         Task UpdateAsync(Settlement settlement);
         Task SaveChangesAsync();
+
+        Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId);
     }
 }

@@ -97,6 +97,11 @@ namespace EzBill.Application.Service
             return await MapToDto(settlements);
         }
 
+        public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
+        {
+            return await _settlementRepository.GetByDebtorIdAsync(debtorId);
+        }
+
         public async Task<List<SettlementResultDto>> GetSettlementsByTripAsync(Guid tripId)
         {
             var settlements = await _settlementRepository.GetByTripIdAsync(tripId);

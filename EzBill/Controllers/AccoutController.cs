@@ -59,5 +59,19 @@ namespace EzBill.Controllers
             var accounts = await _accountService.GetAll();
             return Ok(accounts);
         }
+
+        [HttpGet("account/{id}")]
+        public async Task<IActionResult> GetAccountById(Guid id)
+        {
+            var account = await _accountService.GetProfile(id);
+            if (account == null)
+            {
+                return NotFound(new
+                {
+                    message = "Account not found"
+                });
+            }
+            return Ok(account);
+        }
     }
 }
