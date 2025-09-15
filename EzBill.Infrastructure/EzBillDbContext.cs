@@ -19,7 +19,11 @@ namespace EzBill.Infrastructure
         public DbSet<TaxRefund_Usage> TaxRefund_Usages { get; set; }
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        public DbSet<Plan> Plans { get; set; }
+
+		public DbSet<AccountSubscriptions> AccountSubscriptions { get; set; }
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(entity =>
             {
@@ -28,7 +32,32 @@ namespace EzBill.Infrastructure
                 entity.Property(e => e.AccountId).ValueGeneratedOnAdd();
             });
 
-            modelBuilder.Entity<Trip>(entity =>
+            modelBuilder.Entity<Plan>(entity =>
+			{
+				entity.ToTable("Plan");
+				entity.HasKey(e => e.PlanId);
+				entity.Property(e => e.PlanId).ValueGeneratedOnAdd();
+
+			});
+
+            modelBuilder.Entity<AccountSubscriptions>(entity =>
+            {
+                entity.ToTable("AccountSubscriptions");
+				entity.HasKey(e => e.SubscriptionId);
+				entity.Property(e => e.SubscriptionId).ValueGeneratedOnAdd();
+				entity.HasOne(e => e.Account)
+					  .WithMany(e => e.AccountSubscriptions)
+					  .HasForeignKey(e => e.AccountId)
+					  .HasConstraintName("FK_AccountSubscriptions_Account");
+
+				entity.HasOne(e => e.Plan)
+				.WithMany(e => e.AccountSubscriptions)
+					  .HasForeignKey(e => e.PlanId)
+					  .HasConstraintName("FK_AccountSubscriptions_Plan");
+
+			});
+
+			modelBuilder.Entity<Trip>(entity =>
             {
                 entity.ToTable("Trip");
                 entity.HasKey(e => e.TripId);

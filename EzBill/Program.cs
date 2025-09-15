@@ -4,7 +4,6 @@ using EzBill.Application.Service;
 using EzBill.Domain.IRepository;
 using EzBill.Infrastructure;
 using EzBill.Infrastructure.Repository;
-using EzBill.Infrastructure.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -61,7 +60,14 @@ namespace EzBill
             builder.Services.AddDbContext<EzBillDbContext>(opt =>
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            var secretKey = builder.Configuration["Jwt:SecretKey"];
+			builder.Services.AddSingleton<MongoDbContext>(sp =>
+			{
+				var connectionString = builder.Configuration.GetConnectionString("MongoDb");
+				var dbName = builder.Configuration["MongoDbSettings:DatabaseName"];
+				return new MongoDbContext(connectionString, dbName);
+			});
+
+			var secretKey = builder.Configuration["Jwt:SecretKey"];
             var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
 
             builder.Services.AddAuthentication(options =>

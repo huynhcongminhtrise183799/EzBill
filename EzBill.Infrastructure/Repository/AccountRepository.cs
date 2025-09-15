@@ -52,5 +52,21 @@ namespace EzBill.Infrastructure.Repository
                 .Where(a => accountIds.Contains(a.AccountId))
                 .ToListAsync();
         }
-    }
+
+		public async Task<bool> Register(Account account)
+		{
+            try
+            {
+                await _context.Accounts.AddAsync(account);
+                await _context.SaveChangesAsync();
+                return true;
+			}
+            catch (Exception)
+            {
+
+                return false;
+            }
+
+		}
+	}
 }

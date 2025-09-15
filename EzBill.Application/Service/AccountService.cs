@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EzBill.Infrastructure.Service
+namespace EzBill.Application.Service
 {
     public class AccountService : IAccountService
     {
@@ -36,5 +36,12 @@ namespace EzBill.Infrastructure.Service
             var token = await _tokenService.GenerateToken(account);
             return token;
         }
-    }
+
+		public async Task<bool> Register(Account account)
+		{
+			return await _repo.Register(account);
+		}
+
+		
+	}
 }

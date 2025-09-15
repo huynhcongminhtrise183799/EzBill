@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace EzBill.Domain.Entity
 {
-    public class Trip
+    public enum TripStatus
+	{
+		ACTIVE, INACTIVE
+	}
+	public class Trip
     {
         public Guid TripId { get; set; }
 
@@ -20,7 +24,9 @@ namespace EzBill.Domain.Entity
 
         public double? Budget { get; set; }
 
-        public Account Account { get; set; }
+        public string Status { get; set; } // ACTIVE, INACTIVE
+
+		public Account Account { get; set; }
 
         public virtual ICollection<TripMember> TripMembers { get; set; }
         public virtual ICollection<Settlement> Settlements { get; set; }

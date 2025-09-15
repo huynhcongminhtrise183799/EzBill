@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EzBill.Infrastructure.Service
+namespace EzBill.Application.Service
 {
     public class TokenService : ITokenService
     {

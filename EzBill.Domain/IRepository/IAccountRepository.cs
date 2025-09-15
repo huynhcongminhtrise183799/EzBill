@@ -9,6 +9,7 @@ namespace EzBill.Domain.IRepository
 {
     public interface IAccountRepository
     {
+        Task<bool> Register(Account account);
         Task<Account> Login(string email, string password); 
 
         Task<List<Account>> GetAll();

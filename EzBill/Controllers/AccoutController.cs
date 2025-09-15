@@ -1,5 +1,7 @@
 ﻿using EzBill.Application.DTO;
+using EzBill.Application.DTO.Account;
 using EzBill.Application.IService;
+using EzBill.Domain.Entity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,8 +18,13 @@ namespace EzBill.Controllers
         {
             _accountService = accountService;
         }
+		//[HttpPost("register")]
+  //      public async Task<IActionResult> Register(RegisterRequest registerRequest)
+  //      {
+            
+  //      }
 
-        [HttpPost("login")]
+		[HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
             try

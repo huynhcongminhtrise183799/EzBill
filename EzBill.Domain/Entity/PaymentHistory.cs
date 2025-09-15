@@ -10,7 +10,11 @@ namespace EzBill.Domain.Entity
     {
         SETTLEMENT, TAX_REFUND, ADVANCE_REIMBURSE
     }
-    public class PaymentHistory
+    public enum PaymentHistoryStatus
+	{
+		PENDING, COMPLETED, FAILED
+	}
+	public class PaymentHistory
     {
         public Guid PaymentHistoryId { get; set; }
 
@@ -28,7 +32,13 @@ namespace EzBill.Domain.Entity
 
         public string PaymentType { get; set; }
 
-        public Trip Trip { get; set; }
+		public DateOnly PaymentDate { get; set; }
+
+        public string? Note { get; set; }
+
+		public string Status { get; set; } // PENDING, COMPLETED, FAILED
+
+		public Trip Trip { get; set; }
 
         public Account FromAccount { get; set; }
 

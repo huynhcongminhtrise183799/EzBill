@@ -9,10 +9,13 @@ namespace EzBill.Application.IService
 {
     public interface IAccountService
     {
-        Task<string> Login(string email, string password);
+		Task<bool> Register(Account account);
+
+		Task<string> Login(string email, string password);
         Task<List<Account>> GetAll();
 
         Task<Account> GetProfile(Guid accountId);
+
 
     }
 }

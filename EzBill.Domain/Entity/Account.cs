@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace EzBill.Domain.Entity
 {
-    public class Account
+    public enum AccountRole
+    {
+        FREE_USER, ADMIN
+    }
+	public enum AccountStatus
+	{
+		ACTIVE, INACTIVE, BLOCKED
+	}
+	public class Account
     {
         public Guid AccountId { get; set; }
 
@@ -14,9 +22,19 @@ namespace EzBill.Domain.Entity
 
         public string Password { get; set; }
 
-        public string? AvatarUrl { get; set; }
+		public string PhoneNumber { get; set; }
 
-        public virtual ICollection<Trip> Trip { get; set; }
+		public string? AvatarUrl { get; set; }
+
+        public string NickName { get; set; }
+
+        public bool Gender { get; set; }   
+
+        public string Role { get; set; }
+
+        public string Status { get; set; }
+
+		public virtual ICollection<Trip> Trip { get; set; }
 
         public virtual ICollection<TripMember> TripMembers { get; set; }
 
@@ -32,5 +50,7 @@ namespace EzBill.Domain.Entity
         public virtual ICollection<TaxRefund> TaxRefunds { get; set; }
         public virtual ICollection<TaxRefund_Usage> TaxRefund_Usages { get; set; }
 
-    }
+		public virtual ICollection<AccountSubscriptions> AccountSubscriptions { get; set; }
+
+	}
 }

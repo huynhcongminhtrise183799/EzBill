@@ -3,14 +3,13 @@ using EzBill.Application.DTO.Trip;
 using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
-using EzBill.Infrastructure.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EzBill.Infrastructure.Service
+namespace EzBill.Application.Service
 {
     public class TripService : ITripService
     {

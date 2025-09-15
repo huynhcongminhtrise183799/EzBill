@@ -4,7 +4,7 @@ using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 
 
-namespace EzBill.Infrastructure.Service
+namespace EzBill.Application.Service
 {
     public class EventService : IEventService
     {
