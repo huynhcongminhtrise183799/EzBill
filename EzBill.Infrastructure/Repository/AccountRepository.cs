@@ -121,5 +121,12 @@ namespace EzBill.Infrastructure.Repository
 			}
 			return false;
 		}
+
+		public async Task<List<Account>> GetAccountByEmailForTrip(string email)
+		{
+            return await _context.Accounts
+				.Where(a => a.Email.Contains(email))
+				.ToListAsync();
+		}
 	}
 }

@@ -176,5 +176,11 @@ namespace EzBill.Controllers
 			});
 
 		}
+		[HttpGet("account")]
+		public async Task<IActionResult> GetAccountByEmailForTrip([FromQuery] string email)
+		{
+			var accounts = await _accountService.GetAccountByEmailForTrip(email);
+			return Ok(accounts);
+		}
 	}
 }

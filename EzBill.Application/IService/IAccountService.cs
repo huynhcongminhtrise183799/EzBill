@@ -24,5 +24,7 @@ namespace EzBill.Application.IService
         Task<bool> RePassword(RePasswordModel model);
 
         Task<bool> UpdateProfile(ProfileModel profileModel);
+
+		Task<List<FillterAccountByEmail>> GetAccountByEmailForTrip(string email);
 	}
 }
