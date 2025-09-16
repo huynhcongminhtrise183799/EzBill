@@ -10,7 +10,7 @@ namespace EzBill.Domain.IRepository
     public interface IAccountRepository
     {
         Task<bool> Register(Account account);
-        Task<Account> Login(string email, string password); 
+        Task<Account> Login(string email); 
 
         Task<List<Account>> GetAll();
 
@@ -19,6 +19,18 @@ namespace EzBill.Domain.IRepository
         Task<Account?> GetByIdAsync(Guid accountId);
         Task<List<Account>> GetByIdsAsync(IEnumerable<Guid> accountIds);
 
+        Task<bool> CheckEmailExist(string email);
 
-    }
+		Task<bool> CheckNickName(string nickName);
+
+        Task<bool> CheckPhoneNumber(string phone);
+
+        Task<Account?> FindByEmailAsync(string email);
+
+        Task<bool> Update(Account account);
+
+
+
+
+	}
 }
