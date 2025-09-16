@@ -29,7 +29,7 @@ namespace EzBill.Domain.IRepository
 
         Task<bool> Update(Account account);
 
-
+        Task<List<Account>> GetAccountByEmailForTrip(string email);
 
 
 	}

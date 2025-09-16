@@ -32,6 +32,19 @@ namespace EzBill.Application.Service
 			return account;
 		}
 
+		public async Task<List<FillterAccountByEmail>> GetAccountByEmailForTrip(string email)
+		{
+			var accounts = await _repo.GetAccountByEmailForTrip(email);
+			var result = accounts.Select(a => new FillterAccountByEmail
+			{
+				AccountId = a.AccountId,
+				Email = a.Email,
+				NickName = a.NickName,
+				Avatar = a.AvatarUrl
+			}).ToList();
+			return result;
+		}
+
 		public async Task<List<Account>> GetAll()
         {
             return await _repo.GetAll();
