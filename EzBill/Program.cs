@@ -1,10 +1,15 @@
 ﻿
 using EzBill.Application.IService;
 using EzBill.Application.Service;
+using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using EzBill.Infrastructure;
+using EzBill.Infrastructure.Configuration;
+using EzBill.Infrastructure.ExternalService;
 using EzBill.Infrastructure.Repository;
+using EzBill.MiddlewareCustom;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -98,9 +103,13 @@ namespace EzBill
             builder.Services.AddScoped<ITaxRefundRepository, TaxRefundRepository>();
             builder.Services.AddScoped<ISettlementService, SettlementService>();
             builder.Services.AddScoped<ISettlementRepository, SettlementRepository>();
+			builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
+			builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+			builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>();
+            builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
 
-
-            var app = builder.Build();
+			var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             //if (app.Environment.IsDevelopment())
@@ -110,7 +119,8 @@ namespace EzBill
             //}
 
             app.UseHttpsRedirection();
-            app.UseAuthentication();
+            app.UseMiddleware<HandlingException>();
+			app.UseAuthentication();
             app.UseAuthorization();
 
 

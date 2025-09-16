@@ -52,5 +52,7 @@ namespace EzBill.Domain.Entity
 
 		public virtual ICollection<AccountSubscriptions> AccountSubscriptions { get; set; }
 
+		public virtual ICollection<ForgotPassword> ForgotPasswords { get; set; }
+
 	}
 }

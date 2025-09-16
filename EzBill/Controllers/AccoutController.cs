@@ -1,9 +1,10 @@
-﻿using EzBill.Application.DTO;
+﻿
 using EzBill.Application.DTO.Account;
 using EzBill.Application.IService;
-using EzBill.Domain.Entity;
-using Microsoft.AspNetCore.Http;
+using EzBill.Application.ServiceModel.Account;
+using EzBill.Models.Request.Account;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Security.Claims;
 
 namespace EzBill.Controllers
@@ -13,39 +14,86 @@ namespace EzBill.Controllers
     public class AccoutController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IEmailService _emailService;
 
-        public AccoutController(IAccountService accountService)
+		public AccoutController(IAccountService accountService, IEmailService emailService)
         {
             _accountService = accountService;
-        }
-		//[HttpPost("register")]
-  //      public async Task<IActionResult> Register(RegisterRequest registerRequest)
-  //      {
-            
-  //      }
+			_emailService = emailService;
+		}
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterRequest registerRequest)
+        {
+			if (!ModelState.IsValid)
+			{
+				var error = ModelState.Values
+	                        .SelectMany(v => v.Errors)
+	                        .Select(e => e.ErrorMessage)
+	                        .FirstOrDefault();
 
-		[HttpPost("login")]
+				return BadRequest(new
+				{
+					message = error
+				});
+			}
+			var model = new RegisterModel
+            {
+                Email = registerRequest.Email,
+                Password = registerRequest.Password,
+                RePassword = registerRequest.RePassword,
+                Gender = registerRequest.Gender,
+                NickName = registerRequest.NickName,
+                PhoneNumber = registerRequest.PhoneNumber
+            };
+            var check = await _accountService.Register(model);
+            if (check)
+            {
+                return Ok(new
+                {
+                    message = "Register successfully"
+                });
+            }
+			return BadRequest(new
+			{
+				message = "Register failed"
+			});
+		}
+
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
-            try
+			if (!ModelState.IsValid)
             {
+				var error = ModelState.Values
+							.SelectMany(v => v.Errors)
+							.Select(e => e.ErrorMessage)
+							.FirstOrDefault();
+
+				return BadRequest(new
+				{
+					message = error
+				});
+			}
+			
                 var token = await _accountService.Login(login.Email, login.Password);
                 return Ok(new
                 {
                     token = token
                 });
-            }
-            catch (Exception ex)
-            {
+		}
 
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
-        }
+  //      [HttpPost("login-google")]
+		//public async Task<IActionResult> LoginWithGoogle([FromBody] string firebaseToken)
+		//{
+		//	var response = await _accountService.LoginWithGoogleAsync(firebaseToken);
+		//	return Ok(response);
+		//}
 
-        [HttpGet("profile")]
+
+
+
+
+		[HttpGet("profile")]
         public async Task<IActionResult> Profile()
         {
             var accountId = User.FindFirst(ClaimTypes.Sid)?.Value;
@@ -53,7 +101,7 @@ namespace EzBill.Controllers
             {
                 return Unauthorized(new
                 {
-                    message = "Please login"
+                    message = "Chưa login"
                 });
             }
             var account = await _accountService.GetProfile(Guid.Parse(accountId));
@@ -80,5 +128,53 @@ namespace EzBill.Controllers
             }
             return Ok(account);
         }
-    }
+
+        [HttpPut("account/{id}")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, [FromRoute] string id)
+        {
+			if (!ModelState.IsValid)
+			{
+				var error = ModelState.Values
+							.SelectMany(v => v.Errors)
+							.Select(e => e.ErrorMessage)
+							.FirstOrDefault();
+
+				return BadRequest(new
+				{
+					message = error
+				});
+			}
+			var account = await _accountService.GetProfile(Guid.Parse(id));
+			if (account == null)
+			{
+				return NotFound(new
+				{
+					message = "Account not found"
+				});
+			}
+			var model = new ProfileModel
+            {
+				AccountId = Guid.Parse(id),
+				AvatarUrl = request.AvatarUrl,
+                Email = request.Email,
+                Gender = request.Gender,
+				NickName = request.NickName,
+				PhoneNumber = request.PhoneNumber,
+                Role = account.Role
+			};
+			var check = await _accountService.UpdateProfile(model);
+			if (check)
+			{
+				return Ok(new
+				{
+					message = "Update profile successfully"
+				});
+			}
+			return BadRequest(new
+			{
+				message = "Update profile failed"
+			});
+
+		}
+	}
 }

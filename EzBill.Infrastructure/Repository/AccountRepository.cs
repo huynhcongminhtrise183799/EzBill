@@ -33,9 +33,9 @@ namespace EzBill.Infrastructure.Repository
             return account;
         }
 
-        public async Task<Account> Login(string email, string password)
+        public async Task<Account> Login(string email)
         {
-            var result = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email && a.Password == password);
+            var result = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
             if (result == null)
             {
                 throw new Exception("Account not found");
@@ -67,6 +67,59 @@ namespace EzBill.Infrastructure.Repository
                 return false;
             }
 
+		}
+
+		public async Task<bool> CheckEmailExist(string email)
+		{
+			var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+			if (account != null)
+			{
+                return true;
+			}
+            return false;
+		}
+
+		public async Task<bool> CheckNickName(string nickName)
+		{
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.NickName == nickName);
+			if (account != null)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		public async Task<Account?> FindByEmailAsync(string email)
+		{
+            return await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+		}
+
+		public async Task<bool> Update(Account account)
+		{
+            var existingAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == account.AccountId);
+			if (existingAccount == null)
+			{
+				return false; // Account not found
+			}
+            // Update the properties of the existing account
+            existingAccount.NickName = account.NickName;
+            existingAccount.PhoneNumber = account.PhoneNumber;
+            existingAccount.AvatarUrl = account.AvatarUrl;
+            existingAccount.Gender = account.Gender;
+            existingAccount.Email = account.Email;
+            existingAccount.Password = account.Password;
+            await _context.SaveChangesAsync();
+            return true;
+		}
+
+		public async Task<bool> CheckPhoneNumber(string phone)
+		{
+			var account = await _context.Accounts.FirstOrDefaultAsync(a => a.PhoneNumber == phone);
+			if (account != null)
+			{
+				return true;
+			}
+			return false;
 		}
 	}
 }

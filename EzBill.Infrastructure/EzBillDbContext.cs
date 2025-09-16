@@ -23,6 +23,8 @@ namespace EzBill.Infrastructure
 
 		public DbSet<AccountSubscriptions> AccountSubscriptions { get; set; }
 
+        public DbSet<ForgotPassword> ForgotPasswords { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(entity =>
@@ -31,6 +33,17 @@ namespace EzBill.Infrastructure
                 entity.HasKey(e => e.AccountId);
                 entity.Property(e => e.AccountId).ValueGeneratedOnAdd();
             });
+
+            modelBuilder.Entity<ForgotPassword>(entity =>
+            {
+                entity.ToTable("ForgotPassword");
+				entity.HasKey(e => e.ForgotPasswordId);
+				entity.Property(e => e.ForgotPasswordId).ValueGeneratedOnAdd();
+				entity.HasOne(e => e.Account)
+					  .WithMany(e => e.ForgotPasswords)
+					  .HasForeignKey(e => e.AccountId)
+					  .HasConstraintName("FK_ForgotPassword_Account");
+			});
 
             modelBuilder.Entity<Plan>(entity =>
 			{
