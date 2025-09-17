@@ -29,6 +29,7 @@ namespace EzBill.Infrastructure.Repository
             catch (Exception)
             {
 
+
                 return false;
             }
         }
