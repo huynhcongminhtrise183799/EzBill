@@ -38,14 +38,17 @@ namespace EzBill.Controllers
                 EndDate = tripDTO.EndDate,
                 CreatedBy = Guid.Parse(accountId),
                 Budget = tripDTO.Budget,
-                TripMembers = tripDTO.TripMember.Select(t => new TripMember
+				Status = TripStatus.ACTIVE.ToString(),
+				TripMembers = tripDTO.TripMember.Select(t => new TripMember
                 {
                     TripId = tripId,
                     AccountId = Guid.Parse(t.AccountId),
                     Amount = t.Amount,
                     Status = TripMemberStatus.ACTIVE.ToString()
                 }).ToList()
-            };
+
+				
+			};
             var result = await _tripService.AddTrip(trip);
             if (result)
             {
