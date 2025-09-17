@@ -17,6 +17,10 @@ namespace EzBill.Application.DTO.Event
     public class BeneficiaryDto
     {
         public Guid AccountId { get; set; }
-        public double Amount { get; set; }
+
+        public string? Avartar { get; set; }
+
+		public string? NickName { get; set; }
+		public double Amount { get; set; }
     }
 }

@@ -9,7 +9,12 @@ namespace EzBill.Application.DTO.Trip
     public class TripMemberDto
     {
         public Guid AccountId { get; set; }
-        public string Email { get; set; }
+
+        public string? NickName { get; set; }
+
+		public string? Avatar { get; set; }
+
+		public string Email { get; set; }
         public string Status { get; set; }
     }
 }

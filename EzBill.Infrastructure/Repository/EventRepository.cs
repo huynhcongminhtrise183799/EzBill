@@ -25,7 +25,9 @@ namespace EzBill.Infrastructure.Repository
         public async Task<List<Event>> GetByTripIdAsync(Guid tripId)
         {
             return await _context.Events
-                .Include(e => e.Event_Use)
+                .Include(e => e.Account)
+				.Include(e => e.Event_Use)
+                    .ThenInclude(eu => eu.Account)
                 .Where(e => e.TripId == tripId)
                 .ToListAsync();
         }
