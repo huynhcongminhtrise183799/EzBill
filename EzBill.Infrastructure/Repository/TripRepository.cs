@@ -35,7 +35,7 @@ namespace EzBill.Infrastructure.Repository
         }
         public async Task<List<TripMember>> GetTripMembersAsync(Guid tripId)
         {
-            return await _context.TripMembers
+            return await _context.TripMembers.Include(t => t.Account)
                 .Where(tm => tm.TripId == tripId)
                 .ToListAsync();
         }

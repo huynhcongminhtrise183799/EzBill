@@ -38,8 +38,10 @@ namespace EzBill.Application.Service
                 Members = t.TripMembers.Select(m => new TripMemberDto
                 {
                     AccountId = m.AccountId,
-                    Email = m.Account.Email, 
-                    Status = m.Status
+                    Email = m.Account.Email,
+					Avatar = m.Account.AvatarUrl,
+					NickName = m.Account.NickName,
+					Status = m.Status
                 }).ToList()
             }).ToList();
 
@@ -60,8 +62,10 @@ namespace EzBill.Application.Service
                 {
                     AccountId = g.Key,
                     Email = trip.TripMembers.FirstOrDefault(m => m.AccountId == g.Key)?.Account?.Email ?? "",
-                    PaidAmount = g.Sum(e => e.AmountInTripCurrency)
-                }).ToList();
+					Avatar = trip.TripMembers.FirstOrDefault(m => m.AccountId == g.Key)?.Account?.AvatarUrl,
+					NickName = trip.TripMembers.FirstOrDefault(m => m.AccountId == g.Key)?.Account?.NickName,
+					PaidAmount = g.Sum(e => e.AmountInTripCurrency),
+				}).ToList();
 
             var taxRefunds = trip.TaxRefunds.Select(tr => new Application.DTO.Trip.TaxRefundDto
             {
@@ -75,7 +79,9 @@ namespace EzBill.Application.Service
                 {
                     AccountId = u.AccountId,
                     Ratio = u.Ratio.HasValue ? $"{u.Ratio.Value * 100:N2}%" : "0%",
-                    AmountReceived = $"{u.AmountReceived:N0}₫"
+					Avatar = u.Account?.AvatarUrl,
+					NickName = u.Account?.NickName,
+					AmountReceived = $"{u.AmountReceived:N0}₫"
                 }).ToList()
             }).ToList();
 
@@ -83,7 +89,9 @@ namespace EzBill.Application.Service
             {
                 AccountId = m.AccountId,
                 Email = m.Account?.Email ?? "",
-                Status = m.Status
+				Avatar = m.Account?.AvatarUrl,
+				NickName = m.Account?.NickName,
+				Status = m.Status
             }).ToList();
 
             return new TripDetailsDto

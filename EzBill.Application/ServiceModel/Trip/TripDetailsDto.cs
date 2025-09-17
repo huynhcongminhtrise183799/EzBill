@@ -26,6 +26,11 @@ namespace EzBill.Application.DTO.Trip
     {
         public Guid AccountId { get; set; }
         public string Email { get; set; }
-        public double PaidAmount { get; set; }
+
+        public string? Avatar { get; set; }
+
+		public string? NickName { get; set; }
+
+		public double PaidAmount { get; set; }
     }
 }

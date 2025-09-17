@@ -55,6 +55,12 @@ namespace EzBill.Application.Service
 			string body = $"Mã OTP của bạn là: {otp}";
 			await _emailService.SendEmailAsync(forgotPassword.Email, subject, body);
 			var account = await _accountService.GetAccountByEmail(forgotPassword.Email);
+			if (account == null) throw new AppException("Không tìm thấy tài khoản với email này", 404);
+			var checkExist = await _repo.GetOTPByAccountId(account.AccountId);
+			if(checkExist != null)
+			{
+				await _repo.Delete(checkExist.ForgotPasswordId);
+			}
 			var fp = new ForgotPassword
 			{
 				ForgotPasswordId = Guid.NewGuid(),

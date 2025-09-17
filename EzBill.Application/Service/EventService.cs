@@ -118,8 +118,10 @@ namespace EzBill.Application.Service
                         beneficiaries.Add(new BeneficiaryDto
                         {
                             AccountId = member.AccountId,
-                            Amount = amount
-                        });
+                            Amount = amount,
+							Avartar = member.Account?.AvatarUrl,
+							NickName = member.Account?.NickName
+						});
                     }
                     break;
             }
@@ -146,12 +148,16 @@ namespace EzBill.Application.Service
                 EventDescription = e.EventDescription,
                 EventDate = e.EventDate,
                 PaidBy = e.PaidBy,
-                AmountInTripCurrency = e.AmountInTripCurrency,
+				AvartarPaidBy = e.Account?.AvatarUrl,
+				NickNamePaidBy = e.Account?.NickName,
+				AmountInTripCurrency = e.AmountInTripCurrency,
                 Beneficiaries = e.Event_Use.Select(u => new BeneficiaryDto
                 {
                     AccountId = u.AccountId,
-                    Amount = u.Amount ?? 0
-                }).ToList()
+                    Amount = u.Amount ?? 0,
+					Avartar = u.Account?.AvatarUrl,
+					NickName = u.Account?.NickName
+				}).ToList()
             }).ToList();
         }
     }

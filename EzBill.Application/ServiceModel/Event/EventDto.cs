@@ -10,7 +10,12 @@ namespace EzBill.Application.DTO.Event
         public string EventDescription { get; set; }
         public DateOnly EventDate { get; set; }
         public Guid PaidBy { get; set; }
-        public double AmountInTripCurrency { get; set; }
+
+        public string? AvartarPaidBy { get; set; }
+
+		public string? NickNamePaidBy { get; set; }
+
+		public double AmountInTripCurrency { get; set; }
         public List<BeneficiaryDto> Beneficiaries { get; set; }
     }
 

@@ -19,7 +19,10 @@ namespace EzBill.Application.DTO.Trip
     public class TaxRefundBeneficiaryDto
     {
         public Guid AccountId { get; set; }
-        public string Ratio { get; set; }         
+        public string? Avatar { get; set; }
+
+		public string? NickName { get; set; }
+		public string Ratio { get; set; }         
         public string AmountReceived { get; set; } 
     }
 }
