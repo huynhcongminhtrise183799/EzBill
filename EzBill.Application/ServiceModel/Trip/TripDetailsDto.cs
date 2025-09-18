@@ -24,7 +24,7 @@ namespace EzBill.Application.DTO.Trip
     }
     public class EventContributionDto
     {
-        public Guid AccountId { get; set; }
+        public Guid? AccountId { get; set; }
         public string Email { get; set; }
 
         public string? Avatar { get; set; }

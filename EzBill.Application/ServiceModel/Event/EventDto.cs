@@ -9,7 +9,7 @@ namespace EzBill.Application.DTO.Event
         public string EventName { get; set; }
         public string EventDescription { get; set; }
         public DateOnly EventDate { get; set; }
-        public Guid PaidBy { get; set; }
+        public Guid? PaidBy { get; set; }
 
         public string? AvartarPaidBy { get; set; }
 
