@@ -50,6 +50,7 @@ namespace EzBill.Domain.Entity
         public Account Account { get; set; }
 
         public virtual ICollection<TaxRefund_Usage> TaxRefund_Usages { get; set; }
-        
-    }
+		public virtual ICollection<TaxRefund_Event> TaxRefund_Events { get; set; }
+
+	}
 }
