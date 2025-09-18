@@ -45,7 +45,7 @@ namespace EzBill.Application.Service
                 foreach (var use in evt.Event_Use)
                 {
                     balances.TryAdd(use.AccountId, 0);
-                    balances[use.AccountId] -= use.Amount ?? 0;
+                    balances[use.AccountId] -= use.AmountFromGroup ?? 0;
                 }
             }
 

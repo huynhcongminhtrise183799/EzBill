@@ -24,8 +24,6 @@ namespace EzBill.Domain.Entity
 
 		public double Price { get; set; }
 
-		//public int MaxTrips { get; set; }
-
 		public int MaxMembersPerTrip { get; set; }
 
 		public int MaxGroups { get; set; } 
