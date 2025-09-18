@@ -65,7 +65,7 @@ namespace EzBill.Application.Service
                         {
                             EventId = evt.EventId,
                             AccountId = member.AccountId,
-                            Amount = amount
+							AmountFromGroup = amount
                         });
 
                         beneficiaries.Add(new BeneficiaryDto
@@ -86,7 +86,7 @@ namespace EzBill.Application.Service
                         {
                             EventId = evt.EventId,
                             AccountId = member.AccountId,
-                            Amount = amount
+							AmountFromGroup = amount
                         });
 
                         beneficiaries.Add(new BeneficiaryDto
@@ -112,7 +112,7 @@ namespace EzBill.Application.Service
                         {
                             EventId = evt.EventId,
                             AccountId = member.AccountId,
-                            Amount = amount
+							AmountFromGroup = amount
                         });
 
                         beneficiaries.Add(new BeneficiaryDto
@@ -154,7 +154,7 @@ namespace EzBill.Application.Service
                 Beneficiaries = e.Event_Use.Select(u => new BeneficiaryDto
                 {
                     AccountId = u.AccountId,
-                    Amount = u.Amount ?? 0,
+                    Amount = u.AmountFromGroup ?? 0,
 					Avartar = u.Account?.AvatarUrl,
 					NickName = u.Account?.NickName
 				}).ToList()

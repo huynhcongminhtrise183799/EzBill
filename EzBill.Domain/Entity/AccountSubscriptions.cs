@@ -22,6 +22,8 @@ namespace EzBill.Domain.Entity
 
 		public DateOnly EndDate { get; set; }
 
+		public int GroupRemaining { get; set; }
+
 		public string Status { get; set; } // ACTIVE, INACTIVE, CANCELLED
 
 		public Account Account { get; set; }

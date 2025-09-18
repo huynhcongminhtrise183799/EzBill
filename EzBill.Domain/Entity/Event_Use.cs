@@ -12,9 +12,11 @@ namespace EzBill.Domain.Entity
 
         public Guid AccountId { get; set; }
        
-        public double? Amount { get; set; }
+        public double? AmountFromGroup { get; set; }
 
-        public Event Event  { get; set; }
+        public double? AmountFromPersonal { get; set; }
+
+		public Event Event  { get; set; }
 
         public Account Account { get; set; }
     }

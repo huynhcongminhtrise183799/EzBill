@@ -18,7 +18,9 @@ namespace EzBill.Domain.Entity
 
         public double? Amount { get; set; }
 
-        public string Status { get; set; }
+        public double? AmountRemainInTrip { get; set; }
+
+		public string Status { get; set; }
 
         public Trip Trip { get; set; }
 

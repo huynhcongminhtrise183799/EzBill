@@ -24,7 +24,7 @@ namespace EzBill.Domain.Entity
 
         public Guid TripId { get; set; }
 
-        public Guid PaidBy { get; set; }
+        public Guid? PaidBy { get; set; }
 
         public string Currency { get; set; }
 
