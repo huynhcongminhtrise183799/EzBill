@@ -40,6 +40,7 @@ namespace EzBill.Domain.Entity
         public Trip Trip { get; set; }
 
         public virtual ICollection<Event_Use> Event_Use { get; set; }
+		public virtual ICollection<TaxRefund_Event> TaxRefund_Events { get; set; }
 
-    }
+	}
 }

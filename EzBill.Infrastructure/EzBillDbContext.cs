@@ -25,6 +25,8 @@ namespace EzBill.Infrastructure
 
         public DbSet<ForgotPassword> ForgotPasswords { get; set; }
 
+        public DbSet<TaxRefund_Event> TaxRefund_Events { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(entity =>
@@ -217,6 +219,21 @@ namespace EzBill.Infrastructure
                       .HasForeignKey(e => e.ToAccountId)
                       .HasConstraintName("FK_PaymentHistory_To_Account");
             });
-        }
+
+            modelBuilder.Entity<TaxRefund_Event>(entity =>
+            {
+                entity.ToTable("TaxRefund_Event");
+                entity.HasKey(e => new { e.TaxRefundId, e.EventId });
+				entity.HasOne(e => e.TaxRefund)
+					.WithMany(e => e.TaxRefund_Events)
+					.HasForeignKey(e => e.TaxRefundId)
+					.HasConstraintName("FK_TaxRefund_Event_TaxRefund");
+				entity.HasOne(e => e.Event)
+				.WithMany(e => e.TaxRefund_Events)
+					.HasForeignKey(e => e.EventId)
+					.HasConstraintName("FK_TaxRefund_Event_Event");
+			});
+
+		}
     }
 }
