@@ -39,10 +39,13 @@ namespace EzBill.Application.Service
 
             foreach (var evt in events)
             {
-                balances.TryAdd(evt.PaidBy, 0);
-                balances[evt.PaidBy] += evt.AmountInTripCurrency;
+				if (evt.PaidBy.HasValue)
+				{
+					balances.TryAdd(evt.PaidBy.Value, 0);
+					balances[evt.PaidBy.Value] += evt.AmountInTripCurrency;
+				}
 
-                foreach (var use in evt.Event_Use)
+				foreach (var use in evt.Event_Use)
                 {
                     balances.TryAdd(use.AccountId, 0);
                     balances[use.AccountId] -= use.AmountFromGroup ?? 0;
