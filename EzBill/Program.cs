@@ -1,6 +1,7 @@
 ﻿
 using EzBill.Application.IService;
 using EzBill.Application.Service;
+using EzBill.ChatHubs;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using EzBill.Infrastructure;
@@ -65,7 +66,7 @@ namespace EzBill
             builder.Services.AddDbContext<EzBillDbContext>(opt =>
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-			builder.Services.AddSingleton<MongoDbContext>(sp =>
+			builder.Services.AddSingleton<IMongoDbContext>(sp =>
 			{
 				var connectionString = builder.Configuration.GetConnectionString("MongoDb");
 				var dbName = builder.Configuration["MongoDbSettings:DatabaseName"];
@@ -91,8 +92,8 @@ namespace EzBill
                    IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes)
                };
            });
-
-            builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+			builder.Services.AddSignalR();
+			builder.Services.AddScoped<IAccountRepository, AccountRepository>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ITripRepository, TripRepository>();
@@ -108,13 +109,27 @@ namespace EzBill
 			builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IForgotPasswordRepository, ForgotPasswordRepository>();
             builder.Services.AddScoped<IForgotPasswordService, ForgotPasswordService>();
+            builder.Services.AddScoped<IChatService, ChatService>();
+			builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+			builder.Services.AddScoped<IChatNotifier, SignalRChatNotifier>();
+            builder.Services.AddScoped<ITripMemberRepository, TripMemberRepository>();
+			builder.Services.AddCors(options =>
+			{
+				options.AddPolicy("AllowAll", policy =>
+				{
+					policy.AllowAnyHeader()
+						  .AllowAnyMethod()
+						  .AllowCredentials()
+						  .SetIsOriginAllowed(_ => true);
+				});
+			});
 
 			var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            //if (app.Environment.IsDevelopment())
-            //{
-                app.UseSwagger();
+			app.UseCors("AllowAll");
+			// Configure the HTTP request pipeline.
+			//if (app.Environment.IsDevelopment())
+			//{
+			app.UseSwagger();
                 app.UseSwaggerUI();
             //}
 
@@ -125,8 +140,8 @@ namespace EzBill
 
 
             app.MapControllers();
-
-            app.Run();
+			app.MapHub<ChatHub>("/chatHub");
+			app.Run();
         }
     }
 }

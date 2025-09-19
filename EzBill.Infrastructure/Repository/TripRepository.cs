@@ -1,11 +1,7 @@
 ﻿using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace EzBill.Infrastructure.Repository
 {
@@ -74,5 +70,20 @@ namespace EzBill.Infrastructure.Repository
             return trip;
         }
 
-    }
+		public async Task<bool> UpdateTripAsync(Trip trip)
+		{
+            var tripExist = await _context.trips.FirstOrDefaultAsync(t => t.TripId == trip.TripId);
+			if (tripExist == null)
+			{
+				return false;
+			}
+			tripExist.TripName = trip.TripName;
+            tripExist.Budget = trip.Budget;
+            tripExist.StartDate = trip.StartDate;
+            tripExist.EndDate = trip.EndDate;
+            tripExist.Status = trip.Status;
+            await _context.SaveChangesAsync();
+            return true;    
+		}
+	}
 }

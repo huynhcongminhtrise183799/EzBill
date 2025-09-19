@@ -32,5 +32,6 @@ namespace EzBill.Domain.IRepository
         Task<List<Account>> GetAccountByEmailForTrip(string email);
 
 
+
 	}
 }
