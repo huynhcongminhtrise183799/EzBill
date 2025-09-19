@@ -13,8 +13,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Host=ezbill-db;Port=5432;Database=ezbill_db;Username=postgres;Password=paavag2481L@
+      - MongoDbSettings__ConnectionString=mongodb://ezbill-mongo:27017
+      - MongoDbSettings__Database=ezbill_mongo
     depends_on:
       - ezbill-db
+      - ezbill-mongo
 
   ezbill-db:
     image: postgres:15-alpine
@@ -29,5 +32,15 @@ services:
     volumes:
       - ezbill_pgdata:/var/lib/postgresql/data
 
+  ezbill-mongo:
+    image: mongo:6.0
+    container_name: ezbill-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ezbill_mongo_data:/data/db
+
 volumes:
   ezbill_pgdata:
+  ezbill_mongo_data:

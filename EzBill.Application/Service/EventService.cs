@@ -1,4 +1,5 @@
 ﻿using EzBill.Application.DTO.Event;
+using EzBill.Application.Exceptions;
 using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
@@ -10,134 +11,154 @@ namespace EzBill.Application.Service
     {
         private readonly IEventRepository _eventRepository;
         private readonly ITripRepository _tripRepository;
+		private readonly ITripMemberRepository _tripMemberRepository;
 
-        public EventService(IEventRepository eventRepository, ITripRepository tripRepository)
+        public EventService(IEventRepository eventRepository, ITripRepository tripRepository, ITripMemberRepository tripMemberRepository)
         {
             _eventRepository = eventRepository;
             _tripRepository = tripRepository;
-        }
+			_tripMemberRepository = tripMemberRepository;
+		}
 
-        public async Task<CreateEventResponse> CreateEventAsync(CreateEventRequest request)
-        {
-            double exchangeRate = (double)request.ExchangeRate;
-            double totalAmount = request.Currency.ToUpper() != "VND"
-                ? request.AmountOriginal * exchangeRate
-                : request.AmountOriginal;
+		public async Task<CreateEventResponse> CreateEventAsync(CreateEventRequest request)
+		{
+			double exchangeRate = (double)request.ExchangeRate;
+			double totalAmount = request.Currency.ToUpper() != "VND"
+				? request.AmountOriginal * exchangeRate
+				: request.AmountOriginal;
 
-            var evt = new Event
-            {
-                EventId = Guid.NewGuid(),
-                EventName = request.EventName,
-                EventDescription = request.EventDescription,
-                EventDate = request.EventDate,
-                ReceiptUrl = request.ReceiptUrl,
-                TripId = request.TripId,
-                PaidBy = request.PaidBy,
-                Currency = request.Currency,
-                AmountOriginal = request.AmountOriginal,
-                ExchangeRate = request.ExchangeRate,
-                AmountInTripCurrency = totalAmount,
-                SplitType = request.SplitType.ToString(),
-                Event_Use = new List<Event_Use>()
-            };
+			var evt = new Event
+			{
+				EventId = Guid.NewGuid(),
+				EventName = request.EventName,
+				EventDescription = request.EventDescription,
+				EventDate = request.EventDate,
+				ReceiptUrl = request.ReceiptUrl,
+				TripId = request.TripId,
+				PaidBy = request.PaidBy,
+				Currency = request.Currency,
+				AmountOriginal = request.AmountOriginal,
+				ExchangeRate = request.ExchangeRate,
+				AmountInTripCurrency = totalAmount,
+				SplitType = request.SplitType.ToString(),
+				Event_Use = new List<Event_Use>()
+			};
 
-            var allMembers = await _tripRepository.GetTripMembersAsync(request.TripId);
-            if (allMembers == null || !allMembers.Any())
-                throw new Exception("Không tìm thấy thành viên nào trong chuyến đi.");
+			var trip = await _tripRepository.GetByIdAsync(request.TripId);
+			if (trip == null) throw new Exception("Không tìm thấy trip.");
 
-            var userIds = request.EventUses != null && request.EventUses.Any()
-                ? request.EventUses.Select(x => x.AccountId).Distinct().ToList()
-                : allMembers.Select(m => m.AccountId).ToList(); 
+			var allMembers = await _tripRepository.GetTripMembersAsync(request.TripId);
+			if (allMembers == null || !allMembers.Any())
+				throw new Exception("Không tìm thấy thành viên nào trong chuyến đi.");
 
-            if (!userIds.Any())
-                throw new ArgumentException("Phải có ít nhất 1 người sử dụng hóa đơn.");
+			var userIds = request.EventUses != null && request.EventUses.Any()
+				? request.EventUses.Select(x => x.AccountId).Distinct().ToList()
+				: allMembers.Select(m => m.AccountId).ToList();
 
-            var beneficiaries = new List<BeneficiaryDto>();
+			if (!userIds.Any())
+				throw new ArgumentException("Phải có ít nhất 1 người sử dụng hóa đơn.");
 
-            switch (request.SplitType)
-            {
-                case SplitType.ONE_FOR_ALL:
-                    foreach (var member in allMembers)
-                    {
-                        double amount = member.AccountId == request.PaidBy ? totalAmount : 0;
+			var beneficiaries = new List<BeneficiaryDto>();
 
-                        evt.Event_Use.Add(new Event_Use
-                        {
-                            EventId = evt.EventId,
-                            AccountId = member.AccountId,
-							AmountFromGroup = amount
-                        });
+			Dictionary<Guid, double> allocation = new();
 
-                        beneficiaries.Add(new BeneficiaryDto
-                        {
-                            AccountId = member.AccountId,
-                            Amount = amount
-                        });
-                    }
-                    break;
+			switch (request.SplitType)
+			{
+				case SplitType.ONE_FOR_ALL:
+					double oneShare = totalAmount / allMembers.Count;
+					foreach (var member in allMembers)
+						allocation[member.AccountId] = oneShare;
+					break;
 
-                case SplitType.EQUAL:
-                    double equalShare = totalAmount / userIds.Count;
-                    foreach (var member in allMembers)
-                    {
-                        double amount = userIds.Contains(member.AccountId) ? equalShare : 0;
+				case SplitType.EQUAL:
+					double equalShare = totalAmount / userIds.Count;
+					foreach (var userId in userIds)
+						allocation[userId] = equalShare;
+					break;
 
-                        evt.Event_Use.Add(new Event_Use
-                        {
-                            EventId = evt.EventId,
-                            AccountId = member.AccountId,
-							AmountFromGroup = amount
-                        });
+				case SplitType.RATIO:
+					double ratioSum = request.EventUses?.Sum(eu => eu.Ratio) ?? 0;
+					if (ratioSum != 100)
+						throw new ArgumentException("Tổng tỉ lệ phải bằng 100%");
+					foreach (var eu in request.EventUses)
+						allocation[eu.AccountId] = totalAmount * (eu.Ratio / 100);
+					break;
+			}
+			if (request.IsGroupMoney)
+			{
+				
+				if (trip.Budget.HasValue && trip.Budget > 0)
+				{
+					if (trip.Budget < totalAmount)
+						throw new AppException("Ngân sách Trip không đủ để chi trả hóa đơn này.", 400);
+					trip.Budget -= totalAmount;
+					await _tripRepository.UpdateTripAsync(trip);
+				}
+			}
+			
 
-                        beneficiaries.Add(new BeneficiaryDto
-                        {
-                            AccountId = member.AccountId,
-                            Amount = amount
-                        });
-                    }
-                    break;
+			
+			foreach (var member in allMembers)
+			{
+				double needToPay = allocation.ContainsKey(member.AccountId) ? allocation[member.AccountId] : 0;
 
-                case SplitType.RATIO:
-                    double ratioSum = request.EventUses?.Sum(eu => eu.Ratio) ?? 0;
-                    if (ratioSum != 100)
-                        throw new ArgumentException("Tổng tỉ lệ phải bằng 100%");
+				double fromGroup = 0;
+				double fromPersonal = 0;
 
-                    foreach (var member in allMembers)
-                    {
-                        double userRatio = request.EventUses?
-                            .FirstOrDefault(x => x.AccountId == member.AccountId)?.Ratio ?? 0;
-                        double amount = totalAmount * (userRatio / 100);
+				if (needToPay > 0)
+				{
+					if (member.AmountRemainInTrip.HasValue && member.AmountRemainInTrip.Value > 0)
+					{
+						if (member.AmountRemainInTrip.Value >= needToPay)
+						{
+							fromGroup = needToPay;
+							member.AmountRemainInTrip -= needToPay;
 
-                        evt.Event_Use.Add(new Event_Use
-                        {
-                            EventId = evt.EventId,
-                            AccountId = member.AccountId,
-							AmountFromGroup = amount
-                        });
+						}
+						else
+						{
+							fromGroup = member.AmountRemainInTrip.Value;
+							fromPersonal = needToPay - fromGroup;
+							member.AmountRemainInTrip = 0;
+						}
+						await _tripMemberRepository.UpdateAmountRemain(trip.TripId, member.AccountId, (double)member.AmountRemainInTrip);
+					}
+					else
+					{
+						fromPersonal = needToPay;
+					}
+				}
 
-                        beneficiaries.Add(new BeneficiaryDto
-                        {
-                            AccountId = member.AccountId,
-                            Amount = amount,
-							Avartar = member.Account?.AvatarUrl,
-							NickName = member.Account?.NickName
-						});
-                    }
-                    break;
-            }
+				evt.Event_Use.Add(new Event_Use
+				{
+					EventId = evt.EventId,
+					AccountId = member.AccountId,
+					AmountFromGroup = fromGroup,
+					AmountFromPersonal = fromPersonal
+				});
 
-            await _eventRepository.AddEventAsync(evt);
-            await _eventRepository.SaveChangesAsync();
+				beneficiaries.Add(new BeneficiaryDto
+				{
+					AccountId = member.AccountId,
+					Amount = needToPay,
+					Avartar = member.Account?.AvatarUrl,
+					NickName = member.Account?.NickName
+				});
+			}
 
-            return new CreateEventResponse
-            {
-                EventId = evt.EventId,
-                Message = "Hóa đơn đã lưu và chia tiền thành công!",
-                TotalAmount = totalAmount,
-                Beneficiaries = beneficiaries
-            };
-        }
-        public async Task<List<EventDto>> GetEventsByTripAsync(Guid tripId)
+			await _eventRepository.AddEventAsync(evt);
+			await _eventRepository.SaveChangesAsync();
+
+			return new CreateEventResponse
+			{
+				EventId = evt.EventId,
+				Message = "Hóa đơn đã lưu và chia tiền thành công!",
+				TotalAmount = totalAmount,
+				Beneficiaries = beneficiaries
+			};
+		}
+
+		public async Task<List<EventDto>> GetEventsByTripAsync(Guid tripId)
         {
             var events = await _eventRepository.GetByTripIdAsync(tripId);
 
