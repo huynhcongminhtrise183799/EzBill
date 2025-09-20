@@ -22,12 +22,28 @@ namespace EzBill.Infrastructure.Repository
             await _context.Events.AddAsync(evt);
         }
 
+        public async Task<List<Event>> GetByIdsAsync(List<Guid> eventIds)
+        {
+            if (eventIds == null || !eventIds.Any())
+                return new List<Event>();
+
+            return await _context.Events
+                .Where(e => eventIds.Contains(e.EventId))
+                .ToListAsync();
+        }
+
+        public Task<Event> GetByIdAsync(Guid eventId)
+        {
+            var evt = _context.Events.FirstOrDefault(e => e.EventId == eventId);
+            return Task.FromResult(evt);
+        }
+
         public async Task<List<Event>> GetByTripIdAsync(Guid tripId)
         {
             return await _context.Events
                 .Include(e => e.Account)
 				.Include(e => e.Event_Use)
-                    .ThenInclude(eu => eu.Account)
+                .ThenInclude(eu => eu.Account)
                 .Where(e => e.TripId == tripId)
                 .ToListAsync();
         }
