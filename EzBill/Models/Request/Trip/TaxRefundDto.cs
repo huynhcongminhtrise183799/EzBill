@@ -15,11 +15,21 @@ namespace EzBill.Models.Request.Trip
         public string RefundAmount { get; set; }   
         public string SplitType { get; set; }      
         public List<TaxRefundBeneficiaryDto> Beneficiaries { get; set; }
+        public List<TaxRefundEventDto> Events { get; set; }
+
     }
     public class TaxRefundBeneficiaryDto
     {
         public Guid AccountId { get; set; }
         public string Ratio { get; set; }         
         public string AmountReceived { get; set; } 
+    }
+
+    public class TaxRefundEventDto
+    {
+        public Guid EventId { get; set; }
+        public string EventName { get; set; }
+        public string OriginalAmount { get; set; }
+        public string RefundAmount { get; set; }
     }
 }

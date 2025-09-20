@@ -3,6 +3,7 @@ using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,72 +12,96 @@ namespace EzBill.Application.Service
     public class TaxRefundService : ITaxRefundService
     {
         private readonly ITaxRefundRepository _taxRefundRepository;
+        private readonly IEventRepository _eventRepository;
 
-        public TaxRefundService(ITaxRefundRepository taxRefundRepository)
+        public TaxRefundService(ITaxRefundRepository taxRefundRepository, IEventRepository eventRepository)
         {
             _taxRefundRepository = taxRefundRepository;
+            _eventRepository = eventRepository;
         }
 
-        public async Task ProcessTaxRefundAsync(TaxRefund taxRefund)
+        public async Task<List<TaxRefundResponseDto>> ProcessTaxRefundAsync(TaxRefundRequestDto request)
         {
-            if (taxRefund.TaxRefund_Usages == null || !taxRefund.TaxRefund_Usages.Any())
-                throw new InvalidOperationException("Danh sách người hưởng không được rỗng.");
+            if (request.Events == null || !request.Events.Any())
+                throw new InvalidOperationException("Danh sách event không được rỗng.");
 
-            if (taxRefund.TaxRefundId == Guid.Empty)
-                taxRefund.TaxRefundId = Guid.NewGuid();
+            var taxRefundResponses = new List<TaxRefundResponseDto>();
 
-            if (taxRefund.TripId == Guid.Empty || !(await _taxRefundRepository.TripExistsAsync(taxRefund.TripId)))
+            foreach (var evtReq in request.Events)
             {
-                var fallbackEventId = await _taxRefundRepository.GetAnyTripIdAsync();
-                if (fallbackEventId == Guid.Empty)
-                    throw new InvalidOperationException("Không tìm thấy Trip hợp lệ để gắn vào TaxRefund.");
-                taxRefund.TripId = fallbackEventId;
+                if (evtReq.Beneficiaries == null || !evtReq.Beneficiaries.Any())
+                    throw new InvalidOperationException($"Event phải có người hưởng.");
+
+                if (evtReq.RefundPercent <= 0 || evtReq.RefundPercent > 100)
+                    throw new InvalidOperationException("Tỷ lệ hoàn thuế phải từ 0–100.");
+
+                var evt = await _eventRepository.GetByIdAsync(evtReq.EventId);
+                if (evt == null)
+                    throw new InvalidOperationException($"Event {evtReq.EventId} không tồn tại.");
+
+                double refundAmount = Math.Round(evt.AmountInTripCurrency * evtReq.RefundPercent / 100, 0);
+                
+                var taxRefund = new TaxRefund
+                {
+                    TaxRefundId = Guid.NewGuid(),
+                    TripId = request.TripId,
+                    RefundedBy = evtReq.RefundedBy,
+                    ProductName = evt.EventName,
+                    OriginalAmount = evt.AmountInTripCurrency,
+                    RefundAmount = refundAmount,
+                    RefundPercent = evtReq.RefundPercent,
+                    SplitType = evtReq.SplitType,
+                    TaxRefund_Usages = evtReq.Beneficiaries.Select(b => new TaxRefund_Usage
+                    {
+                        AccountId = b.AccountId,
+                        Ratio = b.Ratio
+                    }).ToList(),
+                    TaxRefund_Events = new List<TaxRefund_Event>
+                    {
+                        new TaxRefund_Event { EventId = evt.EventId, TaxRefundId = Guid.NewGuid() }
+                    }
+                };
+
+                var splitTypeEnum = Enum.Parse<TaxRefundSplitType>(evtReq.SplitType);
+                ApplySplit(taxRefund, splitTypeEnum);
+
+                await _taxRefundRepository.AddAsync(taxRefund);
+                taxRefundResponses.Add(MapToDto(taxRefund));
             }
 
-            foreach (var usage in taxRefund.TaxRefund_Usages)
-            {
-                usage.TaxRefundId = taxRefund.TaxRefundId;
-            }
+            await _taxRefundRepository.SaveChangesAsync();
+            return taxRefundResponses;
+        }
 
-            taxRefund.RefundAmount = Math.Round(
-                taxRefund.OriginalAmount * taxRefund.RefundPercent / 100, 0);
+        public async Task<List<TaxRefundResponseDto>> GetTaxRefundsByTripAsync(Guid tripId)
+        {
+            var taxRefunds = await _taxRefundRepository.GetByTripIdAsync(tripId);
+            return taxRefunds.Select(MapToDto).ToList();
+        }
 
-            var splitType = Enum.Parse<TaxRefundSplitType>(taxRefund.SplitType);
-
+        private void ApplySplit(TaxRefund taxRefund, TaxRefundSplitType splitType)
+        {
             switch (splitType)
             {
                 case TaxRefundSplitType.EQUAL:
                     SplitEqual(taxRefund);
                     break;
-
                 case TaxRefundSplitType.RATIO:
                     SplitRatio(taxRefund);
                     break;
-
                 case TaxRefundSplitType.KEEP:
                     SplitKeep(taxRefund);
                     break;
-
                 default:
                     throw new InvalidOperationException("Loại chia tiền không hợp lệ.");
-            }
-
-            try
-            {
-                await _taxRefundRepository.AddAsync(taxRefund);
-                await _taxRefundRepository.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                var errorMsg = ex.InnerException?.Message ?? ex.Message;
-                Console.WriteLine("ERROR: " + errorMsg);
-                throw new InvalidOperationException("Không thể lưu dữ liệu: " + errorMsg);
             }
         }
 
         private void SplitEqual(TaxRefund taxRefund)
         {
             var count = taxRefund.TaxRefund_Usages.Count;
+            if (count == 0) throw new InvalidOperationException("Không có người hưởng để chia đều.");
+
             double amountPerPerson = Math.Floor(taxRefund.RefundAmount / count);
             double remainder = taxRefund.RefundAmount - (amountPerPerson * count);
 
@@ -92,7 +117,6 @@ namespace EzBill.Application.Service
         private void SplitRatio(TaxRefund taxRefund)
         {
             double totalRatio = taxRefund.TaxRefund_Usages.Sum(u => u.Ratio ?? 0);
-
             if (Math.Abs(totalRatio - 100.0) > 0.01)
                 throw new InvalidOperationException("Tổng tỷ lệ phải bằng 100%.");
 
@@ -119,26 +143,31 @@ namespace EzBill.Application.Service
                 }
             }
         }
-        public async Task<List<TaxRefundDto>> GetTaxRefundsByTripAsync(Guid tripId)
-        {
-            var taxRefunds = await _taxRefundRepository.GetByTripIdAsync(tripId);
 
-            return taxRefunds.Select(r => new TaxRefundDto
+        private TaxRefundResponseDto MapToDto(TaxRefund r)
+        {
+            return new TaxRefundResponseDto
             {
-                TaxRefundId = r.TaxRefundId,
+                Message = "Hoàn thuế thành công!",
                 ProductName = r.ProductName,
-                OriginalAmount = r.OriginalAmount,
-                RefundPercent = r.RefundPercent,
-                RefundAmount = r.RefundAmount,
-                RefundedBy = r.RefundedBy,
+                OriginalAmount = $"{r.OriginalAmount:N0}₫",
+                RefundPercent = $"{r.RefundPercent}%",
+                RefundAmount = $"{r.RefundAmount:N0}₫",
                 SplitType = r.SplitType,
-                Beneficiaries = r.TaxRefund_Usages.Select(u => new RefundBeneficiaryDto
+                Beneficiaries = r.TaxRefund_Usages?.Select(u => new TaxRefundBeneficiaryResponseDto
                 {
                     AccountId = u.AccountId,
-                    Ratio = u.Ratio ?? 0,
-                    AmountReceived = u.AmountReceived
-                }).ToList()
-            }).ToList();
+                    Ratio = $"{u.Ratio}%",
+                    AmountReceived = $"{u.AmountReceived:N0}₫"
+                }).ToList() ?? new List<TaxRefundBeneficiaryResponseDto>(),
+                Events = r.TaxRefund_Events?.Select(e => new TaxRefundEventResponseDto
+                {
+                    EventId = e.EventId,
+                    EventName = e.Event?.EventName,
+                    OriginalAmount = e.Event?.AmountInTripCurrency.ToString("N0") + "₫",
+                    RefundAmount = r.RefundAmount.ToString("N0") + "₫"
+                }).ToList() ?? new List<TaxRefundEventResponseDto>()
+            };
         }
     }
 }
