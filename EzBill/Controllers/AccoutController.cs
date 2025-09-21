@@ -85,9 +85,9 @@ namespace EzBill.Controllers
 		}
 
 		[HttpPost("login-google")]
-		public async Task<IActionResult> LoginWithGoogle([FromBody] string firebaseToken)
+		public async Task<IActionResult> LoginWithGoogle([FromBody] LoginGGRequest request)
 		{
-			var response = await _accountService.LoginWithGoogleAsync(firebaseToken);
+			var response = await _accountService.LoginWithGoogleAsync(request.Token);
 			return Ok(response);
 		}
 
