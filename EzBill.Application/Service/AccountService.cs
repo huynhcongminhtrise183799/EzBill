@@ -10,19 +10,19 @@ using System.Data;
 
 namespace EzBill.Application.Service
 {
-    public class AccountService : IAccountService
-    {
-        private readonly IAccountRepository _repo;
-        private readonly ITokenService _tokenService;
-        private readonly IPasswordHasher<Account> _passwordHasher;
-		//private readonly IFirebaseAuthService _firebaseAuthService;
+	public class AccountService : IAccountService
+	{
+		private readonly IAccountRepository _repo;
+		private readonly ITokenService _tokenService;
+		private readonly IPasswordHasher<Account> _passwordHasher;
+		private readonly IFirebaseService _firebaseAuthService;
 
-		public AccountService(IAccountRepository repo, ITokenService tokenService, IPasswordHasher<Account> passwordHasher)
-        {
-            _repo = repo;
-            _tokenService = tokenService;
+		public AccountService(IAccountRepository repo, ITokenService tokenService, IPasswordHasher<Account> passwordHasher, IFirebaseService firebaseAuthService)
+		{
+			_repo = repo;
+			_tokenService = tokenService;
 			_passwordHasher = passwordHasher;
-			//_firebaseAuthService = firebaseAuthService;
+			_firebaseAuthService = firebaseAuthService;
 		}
 
 		public async Task<Account?> GetAccountByEmail(string email)
@@ -46,13 +46,13 @@ namespace EzBill.Application.Service
 		}
 
 		public async Task<List<Account>> GetAll()
-        {
-            return await _repo.GetAll();
-        }
+		{
+			return await _repo.GetAll();
+		}
 
-        public async Task<ProfileModel?> GetProfile(Guid accountId)
-        {
-            var account =  await _repo.GetProfile(accountId);
+		public async Task<ProfileModel?> GetProfile(Guid accountId)
+		{
+			var account = await _repo.GetProfile(accountId);
 			if (account == null) throw new AppException("Không tìm thấy account", 400);
 
 			var profileModel = new ProfileModel
@@ -69,10 +69,10 @@ namespace EzBill.Application.Service
 
 		}
 
-        public async Task<string> Login(string email, string password)
-        {
-            try
-            {
+		public async Task<string> Login(string email, string password)
+		{
+			try
+			{
 				var account = await _repo.Login(email);
 				var result = _passwordHasher.VerifyHashedPassword(account, account.Password, password);
 				if (result == PasswordVerificationResult.Failed) throw new AppException("Password không đúng", 400);
@@ -81,54 +81,55 @@ namespace EzBill.Application.Service
 				var token = await _tokenService.GenerateToken(account);
 				return token;
 			}
-            catch (Exception)
-            {
+			catch (Exception)
+			{
 
-                throw new AppException("Email không đúng", 400);
-            }
-        }
+				throw new AppException("Email không đúng", 400);
+			}
+		}
 
-		//public async Task<string> LoginWithGoogleAsync(string token)
-		//{
-		//	var decodedToken = await _firebaseAuthService.VerifyIdTokenAsync(token);
-		//	var email = decodedToken.Claims["email"].ToString();
-		//	string name = decodedToken.Claims.ContainsKey("name") ? decodedToken.Claims["name"].ToString() : email;
-		//	string picture = decodedToken.Claims.ContainsKey("picture") ? decodedToken.Claims["picture"].ToString() : null;
-		//	var account = await _repo.FindByEmailAsync(email);
-		//	if (account == null)
-		//	{
-		//		account = new Account
-		//		{
-		//			AccountId = Guid.NewGuid(),
-		//			Email = email,
-		//			AvatarUrl = picture,
-		//			Gender = true,
-		//			Password = _passwordHasher.HashPassword(null, email),
-		//			PhoneNumber = "",
-		//			NickName = name,
-		//			Role = AccountRole.FREE_USER.ToString(),
-		//			Status = AccountStatus.ACTIVE.ToString()
-		//		};
-		//		bool add = await _repo.Register(account);
-		//		if (!add) throw new AppException("Đăng nhập thất bại", 400);
-				
-		//	}
-		//	else
-		//	{
-		//		if (account.Status == AccountStatus.BLOCKED.ToString()) throw new AppException("Tài khoản đã bị khoá", 400);
-		//		if (account.Status == AccountStatus.INACTIVE.ToString()) throw new AppException("Tài khoản chưa được kích hoạt", 400);
-		//	}
-			
-		//	var accessToken = await _tokenService.GenerateToken(account);
-		//	return accessToken;
+		public async Task<string> LoginWithGoogleAsync(string token)
+		{
+			var decodedToken = await _firebaseAuthService.VerifyIdTokenAsync(token);
+			var email = decodedToken.Claims["email"].ToString();
+			if(email == null) throw new AppException("Không lấy được email từ trong token firebase", 404);
+			string name = decodedToken.Claims.ContainsKey("name") ? decodedToken.Claims["name"].ToString() : email;
+			string picture = decodedToken.Claims.ContainsKey("picture") ? decodedToken.Claims["picture"].ToString() : null;
+			var account = await _repo.FindByEmailAsync(email);
+			if (account == null)
+			{
+				account = new Account
+				{
+					AccountId = Guid.NewGuid(),
+					Email = email,
+					AvatarUrl = picture,
+					Gender = true,
+					Password = _passwordHasher.HashPassword(null, email),
+					PhoneNumber = "",
+					NickName = email,
+					Role = AccountRole.FREE_USER.ToString(),
+					Status = AccountStatus.ACTIVE.ToString()
+				};
+				bool add = await _repo.Register(account);
+				if (!add) throw new AppException("Đăng nhập thất bại", 400);
 
-		//}
+			}
+			else
+			{
+				if (account.Status == AccountStatus.BLOCKED.ToString()) throw new AppException("Tài khoản đã bị khoá", 400);
+				if (account.Status == AccountStatus.INACTIVE.ToString()) throw new AppException("Tài khoản chưa được kích hoạt", 400);
+			}
+
+			var accessToken = await _tokenService.GenerateToken(account);
+			return accessToken;
+
+		}
 
 		public async Task<bool> Register(RegisterModel account)
 		{
-            if (account.Password != account.RePassword) throw new AppException("Password và ConfirmPassword không giống nhau", 400);
+			if (account.Password != account.RePassword) throw new AppException("Password và ConfirmPassword không giống nhau", 400);
 
-            var checkEmail = await _repo.CheckEmailExist(account.Email);
+			var checkEmail = await _repo.CheckEmailExist(account.Email);
 			if (checkEmail) throw new AppException("Email đã tồn tại", 400);
 
 			var checkNickName = await _repo.CheckNickName(account.NickName);
@@ -138,14 +139,14 @@ namespace EzBill.Application.Service
 			if (checkPhone) throw new AppException("Số điện thoại đã tồn tại", 400);
 
 			var newAccount = new Account
-            {
-                AccountId = Guid.NewGuid(),
-                Email = account.Email,
-                Password = _passwordHasher.HashPassword(null, account.Password),
-                PhoneNumber = account.PhoneNumber,
-                Gender = account.Gender == 0 ? true : false,
-                NickName = account.NickName,
-                Role = AccountRole.FREE_USER.ToString(),
+			{
+				AccountId = Guid.NewGuid(),
+				Email = account.Email,
+				Password = _passwordHasher.HashPassword(null, account.Password),
+				PhoneNumber = account.PhoneNumber,
+				Gender = account.Gender == 0 ? true : false,
+				NickName = account.NickName,
+				Role = AccountRole.FREE_USER.ToString(),
 				Status = AccountStatus.ACTIVE.ToString(),
 			};
 			return await _repo.Register(newAccount);
@@ -166,19 +167,19 @@ namespace EzBill.Application.Service
 			var account = await _repo.GetByIdAsync(profileModel.AccountId);
 			if (account == null) throw new AppException("Account không tồn tại", 400);
 
-			if(account.Email != profileModel.Email)
+			if (account.Email != profileModel.Email)
 			{
 				var checkEmail = await _repo.CheckEmailExist(profileModel.Email);
 				if (checkEmail) throw new AppException("Email đã tồn tại", 400);
 			}
-			if(account.NickName != profileModel.NickName)
+			if (account.NickName != profileModel.NickName)
 			{
 				var checkNickName = await _repo.CheckNickName(profileModel.NickName);
 				if (checkNickName) throw new AppException("NickName đã tồn tại", 400);
 			}
-			
 
-			if(account.PhoneNumber != profileModel.PhoneNumber)
+
+			if (account.PhoneNumber != profileModel.PhoneNumber)
 			{
 				var checkPhone = await _repo.CheckPhoneNumber(profileModel.PhoneNumber);
 				if (checkPhone) throw new AppException("Số điện thoại đã tồn tại", 400);

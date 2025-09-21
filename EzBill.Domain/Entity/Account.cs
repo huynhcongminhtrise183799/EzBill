@@ -8,7 +8,7 @@ namespace EzBill.Domain.Entity
 {
     public enum AccountRole
     {
-        FREE_USER, ADMIN
+        FREE_USER, BASIC_USER, VIP_USER, DAILY_USER,ADMIN
     }
 	public enum AccountStatus
 	{
@@ -53,6 +53,8 @@ namespace EzBill.Domain.Entity
 		public virtual ICollection<AccountSubscriptions> AccountSubscriptions { get; set; }
 
 		public virtual ICollection<ForgotPassword> ForgotPasswords { get; set; }
+
+		public virtual ICollection<UserDeviceToken> UserDeviceTokens { get; set; }
 
 	}
 }

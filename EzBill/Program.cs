@@ -9,12 +9,15 @@ using EzBill.Infrastructure.Configuration;
 using EzBill.Infrastructure.ExternalService;
 using EzBill.Infrastructure.Repository;
 using EzBill.MiddlewareCustom;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Net.payOS;
 using System.Text;
 
 namespace EzBill
@@ -113,6 +116,15 @@ namespace EzBill
 			builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 			builder.Services.AddScoped<IChatNotifier, SignalRChatNotifier>();
             builder.Services.AddScoped<ITripMemberRepository, TripMemberRepository>();
+			builder.Services.AddScoped<IFirebaseService, FirebaseService>();
+			builder.Services.AddScoped<IUserDeviceTokenRepository, UserDeviceTokenRepository>();
+            builder.Services.AddScoped<IUserDeviceTokenService, UserDeviceTokenService>();
+            builder.Services.AddScoped<IPlanRepository, PlanRepository >();
+			builder.Services.AddScoped<IPlanService, PlanService>();
+			builder.Services.AddScoped<IPaymentHistoryRepository, PaymentHistoryRepository>();
+			builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
+            builder.Services.AddScoped<IAccountSubscriptionsRepository, AccountSubscriptionsRepository>();
+            builder.Services.AddScoped<IAccountSubscriptionsService , AccountSubscriptionsService>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -123,6 +135,23 @@ namespace EzBill
 						  .SetIsOriginAllowed(_ => true);
 				});
 			});
+
+			if (FirebaseApp.DefaultInstance == null)
+			{
+				FirebaseApp.Create(new AppOptions()
+				{
+					Credential = GoogleCredential.FromFile("ezbill_firebase.json")
+				});
+			}
+			// Lấy config từ appsettings.json
+			var payosConfig = builder.Configuration.GetSection("PayOS");
+
+			// Đăng ký PayOS vào DI container
+			builder.Services.AddSingleton(sp => new PayOS(
+				payosConfig["ClientId"] ?? throw new Exception("Missing ClientId"),
+				payosConfig["ApiKey"] ?? throw new Exception("Missing ApiKey"),
+				payosConfig["ChecksumKey"] ?? throw new Exception("Missing ChecksumKey")
+			));
 
 			var app = builder.Build();
 			app.UseCors("AllowAll");
