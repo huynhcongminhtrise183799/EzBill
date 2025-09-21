@@ -26,6 +26,8 @@ namespace EzBill.Application.Service
 				Description = p.Description,
 				Price = p.Price,
 				BillingCycle = (p.BillingCycle == "Monthly") ? "1 Tháng" : "2 ngày",
+				MaxGroups = p.MaxGroups,
+				MaxMembersPerTrip = p.MaxMembersPerTrip,
 				Status = p.Status
 			}).ToList();
 		}
