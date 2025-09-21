@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\Request\Tax\" />
     <Folder Include="Models\Response\" />
   </ItemGroup>
 
