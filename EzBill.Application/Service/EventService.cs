@@ -100,51 +100,57 @@ namespace EzBill.Application.Service
 			
 			foreach (var member in allMembers)
 			{
-				double needToPay = allocation.ContainsKey(member.AccountId) ? allocation[member.AccountId] : 0;
+                double needToPay = allocation.ContainsKey(member.AccountId) ? allocation[member.AccountId] : 0;
 
-				double fromGroup = 0;
-				double fromPersonal = 0;
+                double fromGroup = 0;
+                double fromPersonal = 0;
 
-				if (needToPay > 0)
-				{
-					if (member.AmountRemainInTrip.HasValue && member.AmountRemainInTrip.Value > 0)
-					{
-						if (member.AmountRemainInTrip.Value >= needToPay)
-						{
-							fromGroup = needToPay;
-							member.AmountRemainInTrip -= needToPay;
+                if (needToPay > 0)
+                {
+                    if (request.IsGroupMoney) 
+                    {
+                        if (member.AmountRemainInTrip.HasValue && member.AmountRemainInTrip.Value > 0)
+                        {
+                            if (member.AmountRemainInTrip.Value >= needToPay)
+                            {
+                                fromGroup = needToPay;
+                                member.AmountRemainInTrip -= needToPay;
+                            }
+                            else
+                            {
+                                fromGroup = member.AmountRemainInTrip.Value;
+                                fromPersonal = needToPay - fromGroup;
+                                member.AmountRemainInTrip = 0;
+                            }
+                            await _tripMemberRepository.UpdateAmountRemain(trip.TripId, member.AccountId, (double)member.AmountRemainInTrip);
+                        }
+                        else
+                        {
+                            fromPersonal = needToPay;
+                        }
+                    }
+                    else 
+                    {
+                        fromPersonal = needToPay;
+                    }
+                }
 
-						}
-						else
-						{
-							fromGroup = member.AmountRemainInTrip.Value;
-							fromPersonal = needToPay - fromGroup;
-							member.AmountRemainInTrip = 0;
-						}
-						await _tripMemberRepository.UpdateAmountRemain(trip.TripId, member.AccountId, (double)member.AmountRemainInTrip);
-					}
-					else
-					{
-						fromPersonal = needToPay;
-					}
-				}
+                evt.Event_Use.Add(new Event_Use
+                {
+                    EventId = evt.EventId,
+                    AccountId = member.AccountId,
+                    AmountFromGroup = fromGroup,
+                    AmountFromPersonal = fromPersonal
+                });
 
-				evt.Event_Use.Add(new Event_Use
-				{
-					EventId = evt.EventId,
-					AccountId = member.AccountId,
-					AmountFromGroup = fromGroup,
-					AmountFromPersonal = fromPersonal
-				});
-
-				beneficiaries.Add(new BeneficiaryDto
-				{
-					AccountId = member.AccountId,
-					Amount = needToPay,
-					Avartar = member.Account?.AvatarUrl,
-					NickName = member.Account?.NickName
-				});
-			}
+                beneficiaries.Add(new BeneficiaryDto
+                {
+                    AccountId = member.AccountId,
+                    Amount = needToPay,
+                    Avartar = member.Account?.AvatarUrl,
+                    NickName = member.Account?.NickName
+                });
+            }
 
 			await _eventRepository.AddEventAsync(evt);
 			await _eventRepository.SaveChangesAsync();
@@ -175,8 +181,10 @@ namespace EzBill.Application.Service
                 Beneficiaries = e.Event_Use.Select(u => new BeneficiaryDto
                 {
                     AccountId = u.AccountId,
-                    Amount = u.AmountFromGroup ?? 0,
-					Avartar = u.Account?.AvatarUrl,
+                    Amount = (u.AmountFromGroup ?? 0) + (u.AmountFromPersonal ?? 0),
+                    AmountFromGroup = u.AmountFromGroup ?? 0,
+                    AmountFromPersonal = u.AmountFromPersonal ?? 0,
+                    Avartar = u.Account?.AvatarUrl,
 					NickName = u.Account?.NickName
 				}).ToList()
             }).ToList();

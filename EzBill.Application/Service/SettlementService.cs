@@ -35,41 +35,62 @@ namespace EzBill.Application.Service
         {
             var events = await _eventRepository.GetByTripIdAsync(tripId);
             var taxRefunds = await _taxRefundRepository.GetByTripIdAsync(tripId);
-            var balances = new Dictionary<Guid, double>();
+            var tripMembers = await _tripRepository.GetTripMembersAsync(tripId);
+
+            var balances = tripMembers.ToDictionary(m => m.AccountId, m => 0.0);
+
+            foreach (var member in tripMembers)
+            {
+                if (member.Amount.HasValue && member.AmountRemainInTrip.HasValue)
+                {
+                    double budgetUsed = member.Amount.Value - member.AmountRemainInTrip.Value;
+                    balances[member.AccountId] += budgetUsed;
+                }
+            }
 
             foreach (var evt in events)
             {
-				if (evt.PaidBy.HasValue)
-				{
-					balances.TryAdd(evt.PaidBy.Value, 0);
-					balances[evt.PaidBy.Value] += evt.AmountInTripCurrency;
-				}
-
-				foreach (var use in evt.Event_Use)
+                if (evt.PaidBy.HasValue)
                 {
-                    balances.TryAdd(use.AccountId, 0);
-                    balances[use.AccountId] -= use.AmountFromGroup ?? 0;
+                    balances[evt.PaidBy.Value] += evt.AmountInTripCurrency; 
+                }
+
+                if (evt.Event_Use != null && evt.Event_Use.Any())
+                {
+                    foreach (var use in evt.Event_Use)
+                    {
+                        balances[use.AccountId] -= (use.AmountFromGroup ?? 0) + (use.AmountFromPersonal ?? 0);
+
+                        balances[use.AccountId] += use.AmountFromGroup ?? 0;
+                    }
                 }
             }
 
             foreach (var refund in taxRefunds)
             {
-                balances.TryAdd(refund.RefundedBy, 0);
-                balances[refund.RefundedBy] -= refund.RefundAmount;
-
-                foreach (var usage in refund.TaxRefund_Usages)
+                if (refund.TaxRefund_Usages != null && refund.TaxRefund_Usages.Any())
                 {
-                    balances.TryAdd(usage.AccountId, 0);
-                    balances[usage.AccountId] += usage.AmountReceived;
+                    foreach (var usage in refund.TaxRefund_Usages)
+                    {
+                        balances[usage.AccountId] += usage.AmountReceived;
+                    }
+                }
+                else
+                {
+                    balances[refund.RefundedBy] += refund.RefundAmount;
                 }
             }
 
             var settlements = new List<Settlement>();
-            foreach (var debtor in balances.Where(b => b.Value < 0))
+
+            var debtors = balances.Where(b => b.Value < 0).ToList();
+            var creditors = balances.Where(b => b.Value > 0).ToList();
+
+            foreach (var debtor in debtors)
             {
                 double owes = -debtor.Value;
 
-                foreach (var creditor in balances.Where(b => b.Value > 0))
+                foreach (var creditor in creditors.Where(c => c.Value > 0))
                 {
                     if (owes <= 0) break;
 
@@ -102,12 +123,8 @@ namespace EzBill.Application.Service
 
         public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
         {
-            var result =  await _settlementRepository.GetByDebtorIdAsync(debtorId);
-            if(result == null)
-            {
-                return new List<Settlement>();
-            }
-            return result;
+            var result = await _settlementRepository.GetByDebtorIdAsync(debtorId);
+            return result ?? new List<Settlement>();
         }
 
         public async Task<List<SettlementResultDto>> GetSettlementsByTripAsync(Guid tripId)
@@ -129,8 +146,7 @@ namespace EzBill.Application.Service
 
         private async Task<List<SettlementResultDto>> MapToDto(List<Settlement> settlements)
         {
-            if (!settlements.Any())
-                return new List<SettlementResultDto>();
+            if (!settlements.Any()) return new List<SettlementResultDto>();
 
             var trip = await _tripRepository.GetByIdAsync(settlements.First().TripId);
             var accountIds = settlements.Select(s => s.FromAccountId)
@@ -138,9 +154,9 @@ namespace EzBill.Application.Service
                                         .Distinct()
                                         .ToList();
 
-            var accounts = await _accountRepository.GetByIdsAsync(accountIds); 
+            var accounts = await _accountRepository.GetByIdsAsync(accountIds);
 
-            var result = settlements.Select(s =>
+            return settlements.Select(s =>
             {
                 var fromAccount = accounts.FirstOrDefault(a => a.AccountId == s.FromAccountId);
                 var toAccount = accounts.FirstOrDefault(a => a.AccountId == s.ToAccountId);
@@ -155,8 +171,6 @@ namespace EzBill.Application.Service
                     TripName = trip?.TripName ?? "Unknown Trip"
                 };
             }).ToList();
-
-            return result;
         }
     }
 }
