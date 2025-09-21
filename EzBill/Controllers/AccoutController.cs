@@ -15,11 +15,13 @@ namespace EzBill.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly IEmailService _emailService;
+		private readonly IUserDeviceTokenService _userDeviceTokenService;
 
-		public AccoutController(IAccountService accountService, IEmailService emailService)
+		public AccoutController(IAccountService accountService, IEmailService emailService, IUserDeviceTokenService userDeviceTokenService)
         {
             _accountService = accountService;
 			_emailService = emailService;
+			_userDeviceTokenService = userDeviceTokenService;
 		}
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest registerRequest)
@@ -82,13 +84,29 @@ namespace EzBill.Controllers
                 });
 		}
 
-  //      [HttpPost("login-google")]
-		//public async Task<IActionResult> LoginWithGoogle([FromBody] string firebaseToken)
-		//{
-		//	var response = await _accountService.LoginWithGoogleAsync(firebaseToken);
-		//	return Ok(response);
-		//}
+		[HttpPost("login-google")]
+		public async Task<IActionResult> LoginWithGoogle([FromBody] string firebaseToken)
+		{
+			var response = await _accountService.LoginWithGoogleAsync(firebaseToken);
+			return Ok(response);
+		}
 
+		[HttpPost("users/{userId}")]
+		public async Task<IActionResult> UserDeviceToken([FromRoute] string userId, [FromBody] UserDeviceTokenRequest request)
+		{
+			var result = await _userDeviceTokenService.SaveDeviceToken(Guid.Parse(userId), request.DeviceId, request.FCMToken);
+			if (result)
+			{
+				return Ok(new
+				{
+					message = "Save device token successfully"
+				});
+			}
+			return BadRequest(new
+			{
+				message = "Save device token failed"
+			});
+		}
 
 
 

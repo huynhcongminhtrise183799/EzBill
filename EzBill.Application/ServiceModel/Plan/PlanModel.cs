@@ -4,17 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EzBill.Domain.Entity
+namespace EzBill.Application.ServiceModel.Plan
 {
-	public enum PlanBillingCycle
-	{
-		MONTHLY, YEARLY
-	}
-	public enum PlanStatus
-	{
-		ACTIVE, INACTIVE
-	}
-	public class Plan
+	public class PlanModel
 	{
 		public Guid PlanId { get; set; }
 
@@ -26,13 +18,10 @@ namespace EzBill.Domain.Entity
 
 		public int MaxMembersPerTrip { get; set; }
 
-		public int MaxGroups { get; set; } 
+		public int MaxGroups { get; set; }
 
 		public string BillingCycle { get; set; } // MONTHLY, YEARLY
 
 		public string Status { get; set; } // ACTIVE, INACTIVE
-
-		public virtual ICollection<AccountSubscriptions> AccountSubscriptions { get; set; }
-		public virtual ICollection<PaymentHistory> PaymentHistories { get; set; }
 	}
 }

@@ -67,10 +67,24 @@ namespace EzBill.Application.Service
 				SendAt = chatModel.SentAt,
 				IsDeleted = false
 			};
+			var account = await _accountRepository.GetByIdAsync(chatModel.SenderId);
+			if (account == null) throw new AppException("Không tìm thấy người gửi", 404);
+			var chatNoti = new GetMessageModel
+			{
+				MessageId = Guid.NewGuid(),
+				TripId = chatModel.TripId,
+				SenderId = chatModel.SenderId,
+				NickName = account.NickName,
+				AvatarUrl = account.AvatarUrl,
+				Content = chatModel.Content,
+				MessageType = chatModel.Type,
+				FileUrl = chatModel.FileUrl,
+				SentAt = chatModel.SentAt,
+			};
 			var result = await _messageRepository.AddMessageAsync(message);
 			if (result)
 			{
-				await _chatNotifier.NotifyMessageAsync(message.TripId, chatModel);
+				await _chatNotifier.NotifyMessageAsync(message.TripId, chatNoti);
 				return true;
 			}
 			return false;

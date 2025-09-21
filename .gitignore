@@ -67,7 +67,7 @@ packages/*
 # Configuration files   
 
 appsettings*.json   
-
+ezbill_firebase*.json
   
 
 # DotNet Core   

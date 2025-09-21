@@ -27,6 +27,8 @@ namespace EzBill.Infrastructure
 
         public DbSet<TaxRefund_Event> TaxRefund_Events { get; set; }
 
+        public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>(entity =>
@@ -218,7 +220,17 @@ namespace EzBill.Infrastructure
                       .WithMany(e => e.PaymentHistoriesTo)
                       .HasForeignKey(e => e.ToAccountId)
                       .HasConstraintName("FK_PaymentHistory_To_Account");
-            });
+                entity.HasOne(e => e.TaxRefund)
+				.WithMany(e => e.PaymentHistories)
+					  .HasForeignKey(e => e.RelatedTaxRefundId)
+					  .HasConstraintName("FK_PaymentHistory_TaxRefund");
+				entity.HasOne(e => e.Plan)
+				.WithMany(e => e.PaymentHistories)
+					  .HasForeignKey(e => e.PlanId)
+					  .HasConstraintName("FK_PaymentHistory_Plan");
+
+
+			});
 
             modelBuilder.Entity<TaxRefund_Event>(entity =>
             {
@@ -233,6 +245,17 @@ namespace EzBill.Infrastructure
 					.HasForeignKey(e => e.EventId)
 					.HasConstraintName("FK_TaxRefund_Event_Event");
 			});
+
+            modelBuilder.Entity<UserDeviceToken>(entity =>
+            {
+                entity.ToTable("UserDeviceToken");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.HasOne(e => e.Account)
+                    .WithMany(e => e.UserDeviceTokens)
+                    .HasForeignKey(e => e.AccountId)
+                    .HasConstraintName("FK_UserDeviceToken_Account");
+            });
 
 		}
     }

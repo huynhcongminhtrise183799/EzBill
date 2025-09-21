@@ -18,7 +18,7 @@ namespace EzBill.Application.IService
 
         Task<ProfileModel?> GetProfile(Guid accountId);
 
-        //Task<string> LoginWithGoogleAsync(string token);
+        Task<string> LoginWithGoogleAsync(string token);
 
         Task<Account?> GetAccountByEmail(string email);
         Task<bool> RePassword(RePasswordModel model);
@@ -26,5 +26,6 @@ namespace EzBill.Application.IService
         Task<bool> UpdateProfile(ProfileModel profileModel);
 
 		Task<List<FillterAccountByEmail>> GetAccountByEmailForTrip(string email);
+
 	}
 }

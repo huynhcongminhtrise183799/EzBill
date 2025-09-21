@@ -8,7 +8,7 @@ namespace EzBill.Domain.Entity
 {
     public enum PaymentHistoryPaymentType
     {
-        SETTLEMENT, TAX_REFUND, ADVANCE_REIMBURSE
+        SETTLEMENT, TAX_REFUND, ADVANCE_REIMBURSE, BUY_PLAN
     }
     public enum PaymentHistoryStatus
 	{
@@ -18,11 +18,15 @@ namespace EzBill.Domain.Entity
     {
         public Guid PaymentHistoryId { get; set; }
 
-        public Guid TripId { get; set; }
+        public long? OrderCode { get; set; }
+
+        public Guid? PlanId { get; set; }
+
+		public Guid? TripId { get; set; }
 
         public Guid FromAccountId { get; set; }
 
-        public Guid ToAccountId { get; set; }
+        public Guid? ToAccountId { get; set; }
 
         public double Amount { get; set; }
 
@@ -45,5 +49,7 @@ namespace EzBill.Domain.Entity
         public Account ToAccount { get; set; }
 
         public TaxRefund TaxRefund { get; set; }
-    }
+
+		public Plan Plan { get; set; }
+	}
 }

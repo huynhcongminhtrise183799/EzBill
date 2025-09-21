@@ -8,16 +8,17 @@ namespace EzBill.Domain.Entity
 {
     public class Event_Use
     {
-        public Guid EventId { get; set; }
+        public Guid EventId { get; set; } // 1 
 
-        public Guid AccountId { get; set; }
+        public Guid AccountId { get; set; } // 123
        
-        public double? AmountFromGroup { get; set; }
+        public double? AmountFromGroup { get; set; } // 5
 
-        public double? AmountFromPersonal { get; set; }
+        public double? AmountFromPersonal { get; set; } // 20
 
 		public Event Event  { get; set; }
 
         public Account Account { get; set; }
     }
 }
+// tao event an toi:
