@@ -33,35 +33,63 @@ namespace EzBill.Application.Service
 
         public async Task<List<SettlementResultDto>> GenerateSettlementsAsync(Guid tripId)
         {
+            var trip = await _tripRepository.GetByIdAsync(tripId);
+            var tripMembers = await _tripRepository.GetTripMembersAsync(tripId);
             var events = await _eventRepository.GetByTripIdAsync(tripId);
             var taxRefunds = await _taxRefundRepository.GetByTripIdAsync(tripId);
-            var tripMembers = await _tripRepository.GetTripMembersAsync(tripId);
 
-            var balances = tripMembers.ToDictionary(m => m.AccountId, m => 0.0);
+            var settlements = new List<Settlement>();
 
-            foreach (var member in tripMembers)
-            {
-                if (member.Amount.HasValue && member.AmountRemainInTrip.HasValue)
-                {
-                    double budgetUsed = member.Amount.Value - member.AmountRemainInTrip.Value;
-                    balances[member.AccountId] += budgetUsed;
-                }
-            }
+            var memberBudgets = tripMembers.ToDictionary(m => m.AccountId, m => m.AmountRemainInTrip ?? 0);
+            var tripOwnerId = trip.CreatedBy;
 
             foreach (var evt in events)
             {
-                if (evt.PaidBy.HasValue)
-                {
-                    balances[evt.PaidBy.Value] += evt.AmountInTripCurrency; 
-                }
+                if (!evt.PaidBy.HasValue) continue;
+                var payerId = evt.PaidBy.Value;
 
-                if (evt.Event_Use != null && evt.Event_Use.Any())
+                if (evt.Event_Use != null)
                 {
                     foreach (var use in evt.Event_Use)
                     {
-                        balances[use.AccountId] -= (use.AmountFromGroup ?? 0) + (use.AmountFromPersonal ?? 0);
+                        var userId = use.AccountId;
+                        double amountFromGroup = use.AmountFromGroup ?? 0;
+                        if (amountFromGroup > 0)
+                        {
+                            double budgetRemain = memberBudgets[userId];
+                            double toSettle = 0;
 
-                        balances[use.AccountId] += use.AmountFromGroup ?? 0;
+                            if (userId != payerId)
+                                toSettle = Math.Max(amountFromGroup - budgetRemain, 0);
+
+                            memberBudgets[userId] = Math.Max(budgetRemain - amountFromGroup, 0);
+
+                            if (toSettle > 0)
+                            {
+                                settlements.Add(new Settlement
+                                {
+                                    SettlementId = Guid.NewGuid(),
+                                    TripId = tripId,
+                                    FromAccountId = userId,
+                                    ToAccountId = payerId,
+                                    Amount = toSettle,
+                                    Status = SettlementStatus.UNPAID.ToString()
+                                });
+                            }
+                        }
+
+                        if ((use.AmountFromPersonal ?? 0) > 0)
+                        {
+                            settlements.Add(new Settlement
+                            {
+                                SettlementId = Guid.NewGuid(),
+                                TripId = tripId,
+                                FromAccountId = userId,
+                                ToAccountId = payerId,
+                                Amount = use.AmountFromPersonal.Value,
+                                Status = SettlementStatus.UNPAID.ToString()
+                            });
+                        }
                     }
                 }
             }
@@ -72,43 +100,37 @@ namespace EzBill.Application.Service
                 {
                     foreach (var usage in refund.TaxRefund_Usages)
                     {
-                        balances[usage.AccountId] += usage.AmountReceived;
+                        settlements.Add(new Settlement
+                        {
+                            SettlementId = Guid.NewGuid(),
+                            TripId = tripId,
+                            FromAccountId = refund.RefundedBy,
+                            ToAccountId = usage.AccountId,
+                            Amount = usage.AmountReceived,
+                            Status = SettlementStatus.UNPAID.ToString()
+                        });
                     }
-                }
-                else
-                {
-                    balances[refund.RefundedBy] += refund.RefundAmount;
                 }
             }
 
-            var settlements = new List<Settlement>();
-
-            var debtors = balances.Where(b => b.Value < 0).ToList();
-            var creditors = balances.Where(b => b.Value > 0).ToList();
-
-            foreach (var debtor in debtors)
+            foreach (var member in tripMembers)
             {
-                double owes = -debtor.Value;
+                double remainingBudget = memberBudgets[member.AccountId];
+                if (remainingBudget <= 0) continue;
 
-                foreach (var creditor in creditors.Where(c => c.Value > 0))
+                if (member.AccountId != tripOwnerId)
                 {
-                    if (owes <= 0) break;
-
-                    double canReceive = creditor.Value;
-                    double amount = Math.Min(owes, canReceive);
-
                     settlements.Add(new Settlement
                     {
                         SettlementId = Guid.NewGuid(),
                         TripId = tripId,
-                        FromAccountId = debtor.Key,
-                        ToAccountId = creditor.Key,
-                        Amount = amount,
+                        FromAccountId = tripOwnerId,  
+                        ToAccountId = member.AccountId,
+                        Amount = remainingBudget,
                         Status = SettlementStatus.UNPAID.ToString()
                     });
 
-                    owes -= amount;
-                    balances[creditor.Key] -= amount;
+                    memberBudgets[member.AccountId] = 0; 
                 }
             }
 

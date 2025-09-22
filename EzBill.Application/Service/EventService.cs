@@ -65,10 +65,10 @@ namespace EzBill.Application.Service
 			switch (request.SplitType)
 			{
 				case SplitType.ONE_FOR_ALL:
-					double oneShare = totalAmount / allMembers.Count;
-					foreach (var member in allMembers)
-						allocation[member.AccountId] = oneShare;
-					break;
+                    double oneShare = totalAmount / userIds.Count;
+                    foreach (var userId in userIds)
+                        allocation[userId] = oneShare;
+                    break;
 
 				case SplitType.EQUAL:
 					double equalShare = totalAmount / userIds.Count;
@@ -95,10 +95,9 @@ namespace EzBill.Application.Service
 					await _tripRepository.UpdateTripAsync(trip);
 				}
 			}
-			
 
-			
-			foreach (var member in allMembers)
+            double groupFundRemain = (double)trip.Budget;
+            foreach (var member in allMembers)
 			{
                 double needToPay = allocation.ContainsKey(member.AccountId) ? allocation[member.AccountId] : 0;
 
@@ -107,29 +106,11 @@ namespace EzBill.Application.Service
 
                 if (needToPay > 0)
                 {
-                    if (request.IsGroupMoney) 
+                    if (request.IsGroupMoney)
                     {
-                        if (member.AmountRemainInTrip.HasValue && member.AmountRemainInTrip.Value > 0)
-                        {
-                            if (member.AmountRemainInTrip.Value >= needToPay)
-                            {
-                                fromGroup = needToPay;
-                                member.AmountRemainInTrip -= needToPay;
-                            }
-                            else
-                            {
-                                fromGroup = member.AmountRemainInTrip.Value;
-                                fromPersonal = needToPay - fromGroup;
-                                member.AmountRemainInTrip = 0;
-                            }
-                            await _tripMemberRepository.UpdateAmountRemain(trip.TripId, member.AccountId, (double)member.AmountRemainInTrip);
-                        }
-                        else
-                        {
-                            fromPersonal = needToPay;
-                        }
+                        fromGroup = needToPay;
                     }
-                    else 
+                    else
                     {
                         fromPersonal = needToPay;
                     }
