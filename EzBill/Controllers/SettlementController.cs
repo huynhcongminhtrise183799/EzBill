@@ -46,5 +46,23 @@ namespace EzBill.Controllers
             return Ok(result);
         }
 
-    }
+        [HttpGet("account/{id}")]
+		public async Task<IActionResult> GetSettlementsByAccount([FromRoute]Guid id, [FromQuery] string state)
+		{
+			var result = await _settlementService.GetSettlementsByAccountIdWithFiltterAsync(id,state);
+			return Ok(result);
+		}
+
+		[HttpPut("{settlementId}/pay")]
+		public async Task<IActionResult> ChangeStatusToPaid(Guid settlementId)
+		{
+			var result = await _settlementService.ChangeSettlementStatusToPaid(settlementId);
+			if (result)
+			{
+				return Ok(new { message = "Trả nợ thành công" });
+			}
+			return BadRequest(new { message = "Trả nợ thất bại" });
+		}
+
+	}
 }

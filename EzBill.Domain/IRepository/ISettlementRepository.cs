@@ -10,9 +10,16 @@ namespace EzBill.Domain.IRepository
         Task UpdateAsync(Settlement settlement);
         Task SaveChangesAsync();
 
-        Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId);
+        Task<List<Settlement>?> GetUnPaidByDebtorIdAsync(Guid debtorId);
+
+		Task<List<Settlement>?> GetUnPaidByCreditorIdAsync(Guid creditor);
+
 
 		Task<IEnumerable<Settlement>> GetUnpaidSettlementsAsync();
+
+        Task<List<Settlement>> GetAllUnPaidSettlementsByAccountId(Guid accountId);
+
+        Task<bool> ChangeSettlementStatus(Guid settlementId, string status);
 
 	}
 }

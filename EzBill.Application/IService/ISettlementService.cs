@@ -12,5 +12,10 @@ namespace EzBill.Application.IService
 
         Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId);
 
-    }
+		Task<List<SettlementResultDto>> GetSettlementsByAccountIdWithFiltterAsync(Guid accountId, string state);
+
+        Task<bool> ChangeSettlementStatusToPaid(Guid settlementId);
+
+
+	}
 }

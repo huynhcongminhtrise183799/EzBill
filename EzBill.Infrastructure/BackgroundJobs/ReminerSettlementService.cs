@@ -59,7 +59,7 @@ namespace EzBill.Infrastructure.BackgroundJobs
 				}
 
 				// 3. Đợi trước khi chạy vòng lặp tiếp theo (ví dụ: mỗi 1 giờ)
-				await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+				await Task.Delay(TimeSpan.FromHours(10), stoppingToken);
 			}
 
 			_logger.LogInformation("ReminerSettlementService stopped.");

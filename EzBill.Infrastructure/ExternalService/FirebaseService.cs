@@ -76,6 +76,50 @@ namespace EzBill.Infrastructure.ExternalService
 
 			return responses;
 		}
+
+		public async Task<List<string>> SendNotiConfirmedAsync(Guid toAccountId)
+		{
+			var responses = new List<string>();
+
+			var tokens = await _userDeviceTokenService.GetDeviceTokensByAccountId(toAccountId);
+
+			if (tokens == null || !tokens.Any())
+			{
+				responses.Add($"No device tokens found for account {toAccountId}");
+				return responses;
+			}
+
+			var message = new MulticastMessage
+			{
+				Tokens = tokens,
+				Notification = new Notification
+				{
+					Title = "Thanh toán thành công 🎉",
+					Body = "Khoản nợ của bạn đã được xác nhận là đã thanh toán."
+				}
+			};
+
+			var response = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(message);
+
+			for (int i = 0; i < response.Responses.Count; i++)
+			{
+				var result = response.Responses[i];
+				var token = tokens[i];
+
+				if (result.IsSuccess)
+				{
+					responses.Add($"Token={token}, Success: MessageId={result.MessageId}");
+				}
+				else
+				{
+					responses.Add($"Token={token}, Fail: {result.Exception?.Message}");
+				}
+			}
+
+			return responses;
+		}
+
+
 		public async Task<List<string>> SendNotificationToAccountsAsync(Guid tripId)
 		{
 			var settlements = await _settlementRepo.GetByTripIdAsync(tripId);

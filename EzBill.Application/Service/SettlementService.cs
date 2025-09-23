@@ -1,4 +1,5 @@
 ﻿using EzBill.Application.DTO.Settlement;
+using EzBill.Application.Exceptions;
 using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
@@ -16,22 +17,40 @@ namespace EzBill.Application.Service
         private readonly ITaxRefundRepository _taxRefundRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly ITripRepository _tripRepository;
+        private readonly IFirebaseService _firebaseService;
 
-        public SettlementService(
+		public SettlementService(
             ISettlementRepository settlementRepository,
             IEventRepository eventRepository,
             ITaxRefundRepository taxRefundRepository,
             IAccountRepository accountRepository,
-            ITripRepository tripRepository)
+            ITripRepository tripRepository,
+			IFirebaseService firebaseService
+			)
         {
             _settlementRepository = settlementRepository;
             _eventRepository = eventRepository;
             _taxRefundRepository = taxRefundRepository;
             _accountRepository = accountRepository;
             _tripRepository = tripRepository;
-        }
+			_firebaseService = firebaseService;
+		}
 
-        public async Task<List<SettlementResultDto>> GenerateSettlementsAsync(Guid tripId)
+        public async Task<bool> ChangeSettlementStatusToPaid(Guid settlementId)
+        {
+            var result = await _settlementRepository.ChangeSettlementStatus(settlementId, SettlementStatus.PAID.ToString());
+            var settlement = await _settlementRepository.GetByIdAsync(settlementId);
+            if (settlement == null) throw new AppException("Không tìm thấy settlement", 404);
+            if (result)
+            {
+                var notiResult = await _firebaseService.SendNotiConfirmedAsync(settlement.ToAccountId);
+                if (notiResult == null) throw new AppException("Gửi thông báo thất bại", 500);
+				return true;
+			}
+			return false;
+		}
+
+		public async Task<List<SettlementResultDto>> GenerateSettlementsAsync(Guid tripId)
         {
             var trip = await _tripRepository.GetByIdAsync(tripId);
             var tripMembers = await _tripRepository.GetTripMembersAsync(tripId);
@@ -145,11 +164,30 @@ namespace EzBill.Application.Service
 
         public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
         {
-            var result = await _settlementRepository.GetByDebtorIdAsync(debtorId);
+            var result = await _settlementRepository.GetUnPaidByDebtorIdAsync(debtorId);
             return result ?? new List<Settlement>();
         }
 
-        public async Task<List<SettlementResultDto>> GetSettlementsByTripAsync(Guid tripId)
+		public async Task<List<SettlementResultDto>> GetSettlementsByAccountIdWithFiltterAsync(Guid accountId, string state)
+		{
+            switch (state)
+            {
+				case "all":
+					var allSettlements = await _settlementRepository.GetAllUnPaidSettlementsByAccountId(accountId);
+					return await MapToDto(allSettlements);
+				case "debt":
+					var debtSettlements = await _settlementRepository.GetUnPaidByDebtorIdAsync(accountId);
+					return await MapToDto(debtSettlements ?? new List<Settlement>());
+				case "credit":
+					var creditSettlements = await _settlementRepository.GetUnPaidByCreditorIdAsync(accountId);
+					return await MapToDto(creditSettlements ?? new List<Settlement>());
+				default:
+                    break;
+            }
+            return null;
+        }
+
+		public async Task<List<SettlementResultDto>> GetSettlementsByTripAsync(Guid tripId)
         {
             var settlements = await _settlementRepository.GetByTripIdAsync(tripId);
             return await MapToDto(settlements);
