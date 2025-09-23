@@ -1,5 +1,6 @@
 ﻿using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -48,10 +49,15 @@ namespace EzBill.Infrastructure.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
+        public async Task<List<Settlement>?> GetUnPaidByDebtorIdAsync(Guid debtorId)
         {
-            return await _context.Settlements.Where(s => s.FromAccountId == debtorId && s.Status.ToLower() == SettlementStatus.UNPAID.ToString().ToLower()).ToListAsync();
-        }
+			return await _context.Settlements
+				 .Include(s => s.FromAccount)
+				 .Include(s => s.ToAccount)
+			.Include(s => s.Trip)
+				 .Where(s => s.FromAccountId == debtorId && s.Status == SettlementStatus.UNPAID.ToString())
+				 .ToListAsync();
+		}
 
 		public async Task<IEnumerable<Settlement>> GetUnpaidSettlementsAsync()
 		{
@@ -61,6 +67,38 @@ namespace EzBill.Infrastructure.Repository
 				.Include(s => s.Trip)
 				.Where(s => s.Status == SettlementStatus.UNPAID.ToString())
 				.ToListAsync();
+		}
+
+		public async Task<List<Settlement>?> GetUnPaidByCreditorIdAsync(Guid creditor)
+		{
+			return await _context.Settlements
+				.Include(s => s.FromAccount)
+				.Include(s => s.ToAccount)
+				.Include(s => s.Trip)
+				.Where(s => s.ToAccountId == creditor && s.Status == SettlementStatus.UNPAID.ToString())
+				.ToListAsync();
+		}
+
+		public async Task<List<Settlement>> GetAllUnPaidSettlementsByAccountId(Guid accountId)
+		{
+			return await _context.Settlements
+				.Include(s => s.FromAccount)
+				.Include(s => s.ToAccount)
+				.Include(s => s.Trip)
+				.Where(s => (s.FromAccountId == accountId || s.ToAccountId == accountId) && s.Status == SettlementStatus.UNPAID.ToString())
+				.ToListAsync();
+		}
+
+		public async Task<bool> ChangeSettlementStatus(Guid settlementId, string status)
+		{
+			var settlement = await _context.Settlements.FirstOrDefaultAsync(s => s.SettlementId == settlementId);
+			if (settlement != null)
+			{
+				settlement.Status = status;
+				await _context.SaveChangesAsync();
+				return true;
+			}
+			return false;
 		}
 	}
 }

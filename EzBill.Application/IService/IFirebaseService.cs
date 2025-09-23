@@ -14,5 +14,7 @@ namespace EzBill.Application.IService
 		Task<List<string>> SendNotificationToAccountsAsync(Guid tripId);
 		Task<List<string>> SendDebtReminderAsync(IEnumerable<Settlement> unpaidSettlements);
 
+		Task<List<string>> SendNotiConfirmedAsync(Guid toAccountId);
+
 	}
 }
