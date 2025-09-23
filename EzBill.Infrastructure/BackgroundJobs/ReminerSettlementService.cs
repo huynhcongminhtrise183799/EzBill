@@ -1,5 +1,6 @@
 ﻿using EzBill.Application.IService;
 using EzBill.Domain.IRepository;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -8,17 +9,14 @@ namespace EzBill.Infrastructure.BackgroundJobs
 	public class ReminerSettlementService : BackgroundService
 	{
 		private readonly ILogger<ReminerSettlementService> _logger;
-		private readonly ISettlementRepository _settlementRepo;
-		private readonly IFirebaseService _firebaseService;
+		private readonly IServiceScopeFactory _scopeFactory;
 
 		public ReminerSettlementService(
 			ILogger<ReminerSettlementService> logger,
-			ISettlementRepository settlementRepo,
-			IFirebaseService firebaseService)
+			IServiceScopeFactory scopeFactory)
 		{
 			_logger = logger;
-			_settlementRepo = settlementRepo;
-			_firebaseService = firebaseService;
+			_scopeFactory = scopeFactory;
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,24 +27,30 @@ namespace EzBill.Infrastructure.BackgroundJobs
 			{
 				try
 				{
-					// 1. Lấy danh sách các settlement chưa thanh toán
-					var unpaidSettlements = await _settlementRepo.GetUnpaidSettlementsAsync();
-
-					if (unpaidSettlements != null && unpaidSettlements.Any())
+					using (var scope = _scopeFactory.CreateScope())
 					{
-						_logger.LogInformation("Found {Count} unpaid settlements. Sending reminders...", unpaidSettlements.Count());
+						var settlementRepo = scope.ServiceProvider.GetRequiredService<ISettlementRepository>();
+						var firebaseService = scope.ServiceProvider.GetRequiredService<IFirebaseService>();
 
-						// 2. Gửi nhắc nợ qua Firebase
-						var responses = await _firebaseService.SendDebtReminderAsync(unpaidSettlements);
+						// 1. Lấy danh sách các settlement chưa thanh toán
+						var unpaidSettlements = await settlementRepo.GetUnpaidSettlementsAsync();
 
-						foreach (var res in responses)
+						if (unpaidSettlements != null && unpaidSettlements.Any())
 						{
-							_logger.LogInformation("Debt reminder result: {Result}", res);
+							_logger.LogInformation("Found {Count} unpaid settlements. Sending reminders...", unpaidSettlements.Count());
+
+							// 2. Gửi nhắc nợ qua Firebase
+							var responses = await firebaseService.SendDebtReminderAsync(unpaidSettlements);
+
+							foreach (var res in responses)
+							{
+								_logger.LogInformation("Debt reminder result: {Result}", res);
+							}
 						}
-					}
-					else
-					{
-						_logger.LogInformation("No unpaid settlements found at {Time}", DateTimeOffset.Now);
+						else
+						{
+							_logger.LogInformation("No unpaid settlements found at {Time}", DateTimeOffset.Now);
+						}
 					}
 				}
 				catch (Exception ex)
