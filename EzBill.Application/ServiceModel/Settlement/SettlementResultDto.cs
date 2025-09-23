@@ -15,4 +15,16 @@ namespace EzBill.Application.DTO.Settlement
         public string Status { get; set; }
         public string TripName { get; set; }
     }
+
+    public class BudgetReportDto
+    {
+        public string AccountName { get; set; }
+        public double RemainingBudget { get; set; }
+    }
+
+    public class GenerateSettlementResponse
+    {
+        public List<SettlementResultDto> Settlements { get; set; }
+        public List<BudgetReportDto> BudgetReports { get; set; }
+    }
 }
