@@ -11,7 +11,7 @@ namespace EzBill.Domain.IRepository
 	{
 		Task<bool> AddPaymentHistoryAsync(PaymentHistory payment);
 
-		Task<bool> ChangePaymentStatus(long OrderCode);
+		Task<bool> ChangePaymentStatus(long OrderCode, string status);
 
 		Task<PaymentHistory?> GetByOrderCode(long OrderCode);
 	}

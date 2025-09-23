@@ -1,4 +1,5 @@
-﻿using EzBill.Application.IService;
+﻿using EzBill.Application.Exceptions;
+using EzBill.Application.IService;
 using EzBill.Application.ServiceModel.Payment;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
@@ -37,14 +38,24 @@ namespace EzBill.Application.Service
 			return _paymentHistoryRepository.AddPaymentHistoryAsync(paymentHistory);
 		}
 
-		public async Task<bool> ChangePaymentStatus(long OrderCode)
+		public async Task<bool> ChangePaymentStatus(long OrderCode, string status)
 		{
-			return await _paymentHistoryRepository.ChangePaymentStatus(OrderCode);
+			return await _paymentHistoryRepository.ChangePaymentStatus(OrderCode, status);
 		}
 
 		public async Task<PaymentHistory?> GetByOrderCode(long OrderCode)
 		{
 			return await _paymentHistoryRepository.GetByOrderCode(OrderCode);
+		}
+
+		public async Task<string> GetPaymentStatusByOrderCode(long OrderCode)
+		{
+			var payment = await _paymentHistoryRepository.GetByOrderCode(OrderCode);
+			if (payment == null)
+			{
+				throw new AppException("Payment not found", 404);
+			}
+			return payment.Status;
 		}
 	}
 }

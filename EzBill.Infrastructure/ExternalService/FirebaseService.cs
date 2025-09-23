@@ -1,5 +1,6 @@
 ﻿using EzBill.Application.IService;
 using EzBill.Application.Service;
+using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using FirebaseAdmin.Auth;
 using FirebaseAdmin.Messaging;
@@ -22,6 +23,58 @@ namespace EzBill.Infrastructure.ExternalService
 			_userDeviceTokenService = userDeviceTokenService;
 			_settlementRepo = settlementRepo;
 			_accountRepo = accountRepo;
+		}
+		public async Task<List<string>> SendDebtReminderAsync(IEnumerable<Settlement> unpaidSettlements)
+		{
+			var responses = new List<string>();
+
+			foreach (var settlement in unpaidSettlements)
+			{
+				var fromAccountId = settlement.FromAccountId;
+				var toAccountId = settlement.ToAccountId;
+				var amount = settlement.Amount;
+				var fromNickName = settlement.FromAccount?.NickName ?? "Người nợ";
+				var toNickName = settlement.ToAccount?.NickName ?? "Người cho vay";
+				var tripName = settlement.Trip?.TripName ?? "Chuyến đi";
+
+				// Token của người nợ
+				var fromTokens = await _userDeviceTokenService.GetDeviceTokensByAccountId(fromAccountId);
+				if (fromTokens?.Any() == true)
+				{
+					var fromMessage = new MulticastMessage
+					{
+						Tokens = fromTokens,
+						Notification = new Notification
+						{
+							Title = "Nhắc nợ",
+							Body = $"Bạn đang nợ {toNickName} trong chuyến đi {tripName} {amount:N0}đ. Vui lòng thanh toán!"
+						}
+					};
+
+					var fromResponse = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(fromMessage);
+					responses.Add($"DebtReminder->Debtor={fromNickName}, Success={fromResponse.SuccessCount}, Fail={fromResponse.FailureCount}");
+				}
+
+				// Token của người được nợ (thông báo cho họ rằng có người chưa trả)
+				var toTokens = await _userDeviceTokenService.GetDeviceTokensByAccountId(toAccountId);
+				if (toTokens?.Any() == true)
+				{
+					var toMessage = new MulticastMessage
+					{
+						Tokens = toTokens,
+						Notification = new Notification
+						{
+							Title = "Thông báo nợ",
+							Body = $"{fromNickName} vẫn đang nợ bạn {amount:N0}đ trong chuyến đi {tripName}"
+						}
+					};
+
+					var toResponse = await FirebaseMessaging.DefaultInstance.SendEachForMulticastAsync(toMessage);
+					responses.Add($"DebtReminder->Creditor={toNickName}, Success={toResponse.SuccessCount}, Fail={toResponse.FailureCount}");
+				}
+			}
+
+			return responses;
 		}
 		public async Task<List<string>> SendNotificationToAccountsAsync(Guid tripId)
 		{

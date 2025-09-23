@@ -11,8 +11,10 @@ namespace EzBill.Application.IService
 	public interface IPaymentHistoryService
 	{
 		Task<bool> AddPaymentHistoryAsync(CreatePaymentHistoryModel payment);
-		Task<bool> ChangePaymentStatus(long OrderCode);
+		Task<bool> ChangePaymentStatus(long OrderCode, string status);
 		Task<PaymentHistory?> GetByOrderCode(long OrderCode);
+
+		Task<string> GetPaymentStatusByOrderCode(long OrderCode);
 
 	}
 }

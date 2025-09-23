@@ -33,6 +33,12 @@ namespace EzBill.Infrastructure.Repository
 			}
 		}
 
+		public async Task<UserDeviceToken?> GetDeviceTokenByFCMAndDeviceId(string FCMToken, string deviceId)
+		{
+			return await _context.UserDeviceTokens
+				.FirstOrDefaultAsync(udt => udt.FCMToken == FCMToken && udt.DeviceId == deviceId);
+		}
+
 		public async Task<List<string>> GetDeviceTokensByAccountId(Guid accountId)
 		{
 			return await _context.UserDeviceTokens
@@ -59,7 +65,7 @@ namespace EzBill.Infrastructure.Repository
 		public async Task<bool> UpdateODeviceToken(UserDeviceToken user)
 		{
 			var existingToken = _context.UserDeviceTokens
-				.FirstOrDefault(udt => udt.AccountId == user.AccountId && udt.DeviceId == user.DeviceId);
+				.FirstOrDefault(udt => udt.DeviceId == user.DeviceId);
 			if (existingToken != null)
 			{
 				existingToken.AccountId = user.AccountId;
