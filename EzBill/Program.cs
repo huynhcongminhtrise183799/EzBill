@@ -5,6 +5,7 @@ using EzBill.ChatHubs;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using EzBill.Infrastructure;
+using EzBill.Infrastructure.BackgroundJobs;
 using EzBill.Infrastructure.Configuration;
 using EzBill.Infrastructure.ExternalService;
 using EzBill.Infrastructure.Repository;
@@ -152,6 +153,7 @@ namespace EzBill
 				payosConfig["ApiKey"] ?? throw new Exception("Missing ApiKey"),
 				payosConfig["ChecksumKey"] ?? throw new Exception("Missing ChecksumKey")
 			));
+			builder.Services.AddHostedService<ReminerSettlementService>();
 
 			var app = builder.Build();
 			app.UseCors("AllowAll");

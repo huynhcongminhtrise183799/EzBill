@@ -68,7 +68,7 @@ packages/*
 
 appsettings*.json   
 ezbill_firebase*.json
-  
+.env
 
 # DotNet Core   
 

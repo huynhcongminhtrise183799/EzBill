@@ -15,6 +15,8 @@ namespace EzBill.Controllers
 		private readonly PayOS _payOS;
 		private readonly IPaymentHistoryService _paymentHistoryService;
 		private readonly IAccountSubscriptionsService _service;
+		private const string COMPLEDTED_PAYMENT = "COMPLETED";
+		private const string FAILED_PAYMENT = "FAILED";
 
 		public PaymentController(PayOS payOS, IPaymentHistoryService paymentHistoryService, IAccountSubscriptionsService service)
 		{
@@ -41,8 +43,8 @@ namespace EzBill.Controllers
 			(int)request.Price,
 			"Thanh toán gói: " + request.PlanName,
 			items,
-			"https://localhost:5001/payment-cancel",  
-			"https://localhost:5001/payment-success"   
+			"ezbill://payment-cancel",  
+			"ezbill://payment-success"   
 			);
 
 
@@ -107,13 +109,14 @@ namespace EzBill.Controllers
 					var orderCode = webhookData.orderCode;   // long
 
 					// Cập nhật trạng thái thanh toán trong hệ thống của bạn
-					var updateResult = await _paymentHistoryService.ChangePaymentStatus(orderCode);
+					
 					var payment = await _paymentHistoryService.GetByOrderCode(orderCode);
-					if (!updateResult || payment == null)
+					if (payment == null)
 					{
 						// Log lỗi không tìm thấy đơn hàng hoặc cập nhật thất bại
 						return BadRequest(new { code = "-1", message = "Order not found or update failed" });
 					}
+					var updateResult = await _paymentHistoryService.ChangePaymentStatus(orderCode, COMPLEDTED_PAYMENT);
 					var model = new CreateAccountSubscriptionsModel
 					{
 						AccountId = payment.FromAccountId,
@@ -124,6 +127,13 @@ namespace EzBill.Controllers
 					{
 						return BadRequest(new { code = "-1", message = "Add subscription failed" });
 					}
+				}
+				else
+				{
+					var orderCode = webhookData.orderCode;   
+
+					var updateResult = await _paymentHistoryService.ChangePaymentStatus(orderCode, FAILED_PAYMENT);
+
 				}
 
 				// trả 200 để payOS biết đã nhận
@@ -137,8 +147,16 @@ namespace EzBill.Controllers
 			}
 	}
 
+		[HttpGet("{orderCode}")]
+		public async Task<IActionResult> GetPaymentByOrderCode([FromRoute] long orderCode)
+		{
+			var payment = await _paymentHistoryService.GetPaymentStatusByOrderCode(orderCode);
+			return Ok(new
+			{
+				status = payment
+			});
+		}	
 
 
-
-}
+	}
 }

@@ -31,12 +31,12 @@ namespace EzBill.Infrastructure.Repository
 			}
 		}
 
-		public async Task<bool> ChangePaymentStatus(long OrderCode)
+		public async Task<bool> ChangePaymentStatus(long OrderCode, string status)
 		{
 			var payment = _context.PaymentHistories.FirstOrDefault(p => p.OrderCode == OrderCode);
 			if (payment != null)
 			{
-				payment.Status = PaymentHistoryStatus.COMPLETED.ToString();
+				payment.Status = status;
 				await	_context.SaveChangesAsync();
 				return true;
 			}

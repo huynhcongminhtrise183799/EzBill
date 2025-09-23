@@ -11,5 +11,8 @@ namespace EzBill.Domain.IRepository
         Task SaveChangesAsync();
 
         Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId);
-    }
+
+		Task<IEnumerable<Settlement>> GetUnpaidSettlementsAsync();
+
+	}
 }

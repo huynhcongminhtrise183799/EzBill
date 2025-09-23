@@ -9,12 +9,8 @@ services:
     container_name: ezbill-api
     ports:
       - "5000:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Host=ezbill-db;Port=5432;Database=ezbill_db;Username=postgres;Password=paavag2481L@
-      - MongoDbSettings__ConnectionString=mongodb://ezbill-mongo:27017
-      - MongoDbSettings__Database=ezbill_mongo
+    env_file:
+      - .env
     depends_on:
       - ezbill-db
       - ezbill-mongo
@@ -24,11 +20,11 @@ services:
     container_name: ezbill-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: paavag2481L@
-      POSTGRES_DB: ezbill_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - ezbill_pgdata:/var/lib/postgresql/data
 
@@ -37,7 +33,7 @@ services:
     container_name: ezbill-mongo
     restart: always
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:27017"
     volumes:
       - ezbill_mongo_data:/data/db
 
