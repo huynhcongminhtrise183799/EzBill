@@ -178,7 +178,8 @@ namespace EzBill.Controllers
                 Gender = request.Gender,
 				NickName = request.NickName,
 				PhoneNumber = request.PhoneNumber,
-                Role = account.Role
+                Role = account.Role,
+				QrCodeUrl = request.QrCodeUrl
 			};
 			var check = await _accountService.UpdateProfile(model);
 			if (check)

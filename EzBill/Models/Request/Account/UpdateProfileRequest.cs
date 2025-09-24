@@ -21,5 +21,7 @@ namespace EzBill.Models.Request.Account
 
 		[Required(ErrorMessage = "Vui lòng nhập giới tính")]
 		public string Gender { get; set; }
+
+		public string? QrCodeUrl { get; set; }
 	}
 }

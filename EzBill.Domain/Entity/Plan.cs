@@ -14,6 +14,10 @@ namespace EzBill.Domain.Entity
 	{
 		ACTIVE, INACTIVE
 	}
+	public enum PlanType
+	{
+		BASIC, VIP, DAILY
+	}
 	public class Plan
 	{
 		public Guid PlanId { get; set; }
@@ -29,6 +33,8 @@ namespace EzBill.Domain.Entity
 		public int MaxGroups { get; set; } 
 
 		public string BillingCycle { get; set; } // MONTHLY, YEARLY
+
+		public string Type { get; set; } // BASIC, VIP, DAILY
 
 		public string Status { get; set; } // ACTIVE, INACTIVE
 

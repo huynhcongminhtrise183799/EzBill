@@ -108,7 +108,8 @@ namespace EzBill.Infrastructure.Repository
             existingAccount.Gender = account.Gender;
             existingAccount.Email = account.Email;
             existingAccount.Password = account.Password;
-            await _context.SaveChangesAsync();
+			existingAccount.QrCodeUrl = account.QrCodeUrl;
+			await _context.SaveChangesAsync();
             return true;
 		}
 

@@ -21,5 +21,7 @@ namespace EzBill.Domain.IRepository
 
         Task<bool> ChangeSettlementStatus(Guid settlementId, string status);
 
+        Task<bool> DeleteSettlement(List<Guid> settlements);
+
 	}
 }

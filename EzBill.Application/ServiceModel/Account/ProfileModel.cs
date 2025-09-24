@@ -21,5 +21,7 @@ namespace EzBill.Application.ServiceModel.Account
 		public string Gender { get; set; }
 
 		public string Role { get; set; }
+
+		public string? QrCodeUrl { get; set; }
 	}
 }
