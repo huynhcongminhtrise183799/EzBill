@@ -63,7 +63,8 @@ namespace EzBill.Application.Service
 				Gender = account.Gender ? "Nam" : "Nữ",
 				NickName = account.NickName,
 				PhoneNumber = account.PhoneNumber,
-				Role = account.Role
+				Role = account.Role,
+				QrCodeUrl = account.QrCodeUrl
 			};
 			return profileModel;
 
@@ -190,6 +191,7 @@ namespace EzBill.Application.Service
 			account.Email = profileModel.Email;
 			account.Gender = profileModel.Gender == "0" ? true : false;
 			account.NickName = profileModel.NickName;
+			account.QrCodeUrl = profileModel.QrCodeUrl;
 			var result = await _repo.Update(account);
 			return result;
 

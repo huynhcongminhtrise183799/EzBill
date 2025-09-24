@@ -53,7 +53,8 @@ namespace EzBill.Application.Service
 		public async Task<List<SettlementResultDto>> GenerateSettlementsAsync(Guid tripId)
         {
             var trip = await _tripRepository.GetByIdAsync(tripId);
-            var tripMembers = await _tripRepository.GetTripMembersAsync(tripId);
+			if (trip == null) throw new AppException("Trip không tồn tại.", 404);
+			var tripMembers = await _tripRepository.GetTripMembersAsync(tripId);
             var events = await _eventRepository.GetByTripIdAsync(tripId);
             var taxRefunds = await _taxRefundRepository.GetByTripIdAsync(tripId);
 
@@ -61,8 +62,17 @@ namespace EzBill.Application.Service
 
             var memberBudgets = tripMembers.ToDictionary(m => m.AccountId, m => m.AmountRemainInTrip ?? 0);
             var tripOwnerId = trip.CreatedBy;
+			var existingSettlements = await _settlementRepository.GetByTripIdAsync(tripId);
 
-            foreach (var evt in events)
+			if (existingSettlements.Any())
+			{
+				var settlementIds = existingSettlements
+					.Select(s => s.SettlementId)
+					.ToList();
+
+				await _settlementRepository.DeleteSettlement(settlementIds);
+			}
+			foreach (var evt in events)
             {
                 if (!evt.PaidBy.HasValue) continue;
                 var payerId = evt.PaidBy.Value;

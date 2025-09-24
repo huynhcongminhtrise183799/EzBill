@@ -30,7 +30,9 @@ namespace EzBill.Domain.Entity
 
         public bool Gender { get; set; }   
 
-        public string Role { get; set; }
+        public string? QrCodeUrl { get; set; }
+
+		public string Role { get; set; }
 
         public string Status { get; set; }
 

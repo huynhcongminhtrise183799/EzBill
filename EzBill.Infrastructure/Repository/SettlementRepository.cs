@@ -100,5 +100,21 @@ namespace EzBill.Infrastructure.Repository
 			}
 			return false;
 		}
+
+		public async Task<bool> DeleteSettlement(List<Guid> settlements)
+		{
+			var entities = await _context.Settlements
+				.Where(s => settlements.Contains(s.SettlementId))
+				.ToListAsync();
+
+			if (!entities.Any())
+				return false;
+
+			_context.Settlements.RemoveRange(entities);
+			await _context.SaveChangesAsync();
+
+			return true;
+		}
+
 	}
 }
