@@ -136,6 +136,13 @@ namespace EzBill.Application.Service
 
             if (settlements.Any())
             {
+
+                settlements = settlements
+                    .Where(s => s.FromAccountId != s.ToAccountId)
+                    .ToList();
+
+                settlements = NetSettlements(settlements);
+
                 await _settlementRepository.AddRangeAsync(settlements);
                 await _settlementRepository.SaveChangesAsync();
             }
@@ -193,6 +200,77 @@ namespace EzBill.Application.Service
                     TripName = trip?.TripName ?? "Unknown Trip"
                 };
             }).ToList();
+        }
+
+
+
+        private List<Settlement> NetSettlements(List<Settlement> settlements)
+        {
+            var grouped = settlements
+                .GroupBy(s => new { s.FromAccountId, s.ToAccountId })
+                .Select(g => new Settlement
+                {
+                    SettlementId = Guid.NewGuid(),
+                    TripId = g.First().TripId,
+                    FromAccountId = g.Key.FromAccountId,
+                    ToAccountId = g.Key.ToAccountId,
+                    Amount = g.Sum(x => x.Amount),
+                    Status = SettlementStatus.UNPAID.ToString()
+                })
+                .ToList();
+
+            var netted = new List<Settlement>();
+            var visited = new HashSet<string>();
+
+            foreach (var s in grouped)
+            {
+                string key1 = $"{s.FromAccountId}_{s.ToAccountId}";
+                string key2 = $"{s.ToAccountId}_{s.FromAccountId}";
+
+                if (visited.Contains(key1) || visited.Contains(key2))
+                    continue;
+
+                var opposite = grouped.FirstOrDefault(x =>
+                    x.FromAccountId == s.ToAccountId &&
+                    x.ToAccountId == s.FromAccountId);
+
+                if (opposite != null)
+                {
+                    if (s.Amount > opposite.Amount)
+                    {
+                        netted.Add(new Settlement
+                        {
+                            SettlementId = Guid.NewGuid(),
+                            TripId = s.TripId,
+                            FromAccountId = s.FromAccountId,
+                            ToAccountId = s.ToAccountId,
+                            Amount = s.Amount - opposite.Amount,
+                            Status = SettlementStatus.UNPAID.ToString()
+                        });
+                    }
+                    else if (opposite.Amount > s.Amount)
+                    {
+                        netted.Add(new Settlement
+                        {
+                            SettlementId = Guid.NewGuid(),
+                            TripId = s.TripId,
+                            FromAccountId = opposite.FromAccountId,
+                            ToAccountId = opposite.ToAccountId,
+                            Amount = opposite.Amount - s.Amount,
+                            Status = SettlementStatus.UNPAID.ToString()
+                        });
+                    }
+                }
+                else
+                {
+                    netted.Add(s);
+                }
+
+                visited.Add(key1);
+                visited.Add(key2);
+            }
+
+            return netted.Where(x => x.Amount > 0).ToList();
         }
     }
 }
