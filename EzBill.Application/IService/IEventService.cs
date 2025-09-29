@@ -1,4 +1,5 @@
 ﻿using EzBill.Application.DTO.Event;
+using EzBill.Application.ServiceModel.Event;
 using EzBill.Domain.Entity;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,10 @@ namespace EzBill.Application.IService
     {
         Task<CreateEventResponse> CreateEventAsync(CreateEventRequest request);
         Task<List<EventDto>> GetEventsByTripAsync(Guid tripId);
+		Task<bool> UpdateEvent(UpdateEventModel request);
 
-    }
+		Task<bool> DeleteEvent(Guid eventId);
+		
+		Task<EventDto?> GetEventById(Guid eventId);
+	}
 }

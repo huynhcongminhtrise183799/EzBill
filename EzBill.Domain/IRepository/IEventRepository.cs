@@ -14,5 +14,11 @@ namespace EzBill.Domain.IRepository
         Task<List<Event>> GetByTripIdAsync(Guid tripId);
         Task<List<Event>> GetByIdsAsync(List<Guid> eventIds);
         Task<Event> GetByIdAsync(Guid eventId);
+
+        Task<bool> UpdateEvent(Event evt);
+
+        Task<bool> DeleteEvent(Guid eventId);
+
+        Task<Event?> GetEventById(Guid eventId); 
     }
 }
