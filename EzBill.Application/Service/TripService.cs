@@ -46,7 +46,6 @@ namespace EzBill.Application.Service
 				return true;
 			}
 			return false;
-
 		}
         public async Task<List<TripDto>> GetTripsForAccountAsync(Guid accountId)
         {

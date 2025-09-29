@@ -137,7 +137,22 @@ namespace EzBill.Infrastructure.Repository
             {
                 return false;
 			}
-			account.Role = role;
+            switch (role)
+            {
+				case "BASIC":
+					account.Role = AccountRole.BASIC_USER.ToString();
+					break;
+				case "VIP":
+					account.Role = AccountRole.VIP_USER.ToString();
+					break;
+				case "DAILY":
+					account.Role = AccountRole.DAILY_USER.ToString();
+					break;
+				default:
+                    break;
+
+            }
+           
 			await _context.SaveChangesAsync();
 			return true;
 		}
