@@ -163,6 +163,11 @@ namespace EzBill.Application.Service
 			return result;
 		}
 
+		public async Task<bool> UpdateAccountRole(Guid accountId, string role)
+		{
+			return await _repo.UpdateAccountRole(accountId, role);
+		}
+
 		public async Task<bool> UpdateProfile(ProfileModel profileModel)
 		{
 			var account = await _repo.GetByIdAsync(profileModel.AccountId);

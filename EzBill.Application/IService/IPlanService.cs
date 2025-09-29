@@ -1,4 +1,5 @@
 ﻿using EzBill.Application.ServiceModel.Plan;
+using EzBill.Domain.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,7 @@ namespace EzBill.Application.IService
 	public interface IPlanService
 	{
 		Task<List<PlanModel>> GetActivePlans();
+		Task<Plan?> GetPlanById(Guid planId);
+
 	}
 }

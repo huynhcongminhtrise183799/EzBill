@@ -1,5 +1,6 @@
 ﻿using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +29,26 @@ namespace EzBill.Infrastructure.Repository
 
 				throw;
 			}
+		}
+
+		public async Task<AccountSubscriptions?> GetByAccountId(Guid accountId)
+		{
+			return await  _context.AccountSubscriptions.Include(p => p.Plan)
+				.FirstOrDefaultAsync(a => a.AccountId == accountId && a.Status == SubscriptionStatus.ACTIVE.ToString());
+		}
+
+		public async Task<bool> UpdateSubscriptions(AccountSubscriptions accountSubscriptions)
+		{
+			var existingSubscription = await _context.AccountSubscriptions
+				.FirstOrDefaultAsync(a => a.SubscriptionId == accountSubscriptions.SubscriptionId);
+			if (existingSubscription == null) return false;
+			existingSubscription.PlanId = accountSubscriptions.PlanId;
+			existingSubscription.StartDate = accountSubscriptions.StartDate;
+			existingSubscription.EndDate = accountSubscriptions.EndDate;
+			existingSubscription.GroupRemaining = accountSubscriptions.GroupRemaining;
+			existingSubscription.Status = accountSubscriptions.Status;
+			await _context.SaveChangesAsync();
+			return true;
 		}
 	}
 }

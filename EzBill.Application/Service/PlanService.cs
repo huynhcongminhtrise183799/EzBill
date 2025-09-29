@@ -1,5 +1,6 @@
 ﻿using EzBill.Application.IService;
 using EzBill.Application.ServiceModel.Plan;
+using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,11 @@ namespace EzBill.Application.Service
 				MaxMembersPerTrip = p.MaxMembersPerTrip,
 				Status = p.Status
 			}).ToList();
+		}
+
+		public async Task<Plan?> GetPlanById(Guid planId)
+		{
+			return await _planRepository.GetPlanById(planId);
 		}
 	}
 }

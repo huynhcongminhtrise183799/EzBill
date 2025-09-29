@@ -94,7 +94,7 @@ namespace EzBill.Controllers
 		[HttpPost("users/{userId}")]
 		public async Task<IActionResult> UserDeviceToken([FromRoute] string userId, [FromBody] UserDeviceTokenRequest request)
 		{
-			var result = await _userDeviceTokenService.SaveDeviceToken(Guid.Parse(userId), request.DeviceId, request.FCMToken);
+			var result = await _userDeviceTokenService.SaveDeviceToken(Guid.Parse(userId), request.FCMToken);
 			if (result)
 			{
 				return Ok(new

@@ -12,8 +12,6 @@ namespace EzBill.Domain.Entity
 
 		public Guid AccountId { get; set; }
 
-		public string DeviceId { get; set; } 
-
 		public string FCMToken { get; set; } 
 
 		public Account Account { get; set; } 

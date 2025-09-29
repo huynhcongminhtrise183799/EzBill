@@ -16,6 +16,6 @@ namespace EzBill.Domain.IRepository
 		Task<List<string>> GetDeviceTokensByAccountId(Guid accountId);
 		Task<List<string>> GetTokensByAccountIdsAsync(IEnumerable<Guid> accountIds);
 
-		Task<UserDeviceToken?> GetDeviceTokenByFCMAndDeviceId(string FCMToken, string deviceId);
+		Task<UserDeviceToken?> GetDeviceTokenByFCMAndDeviceId(string FCMToken);
 	}
 }

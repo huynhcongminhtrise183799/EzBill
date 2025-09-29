@@ -8,7 +8,7 @@ namespace EzBill.Application.IService
 {
     public interface IUserDeviceTokenService
     {
-		Task<bool> SaveDeviceToken(Guid accountId, string deviceToken, string fcmToken);
+		Task<bool> SaveDeviceToken(Guid accountId, string fcmToken);
 		Task<List<string>> GetTokensByAccountIdsAsync(IEnumerable<Guid> accountIds);
 		Task<List<string>> GetDeviceTokensByAccountId(Guid accountId);
 

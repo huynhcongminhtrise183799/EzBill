@@ -129,5 +129,32 @@ namespace EzBill.Infrastructure.Repository
 				.Where(a => a.Email.Contains(email))
 				.ToListAsync();
 		}
+
+		public async Task<bool> UpdateAccountRole(Guid accountId, string role)
+		{
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountId == accountId);
+            if (account == null)
+            {
+                return false;
+			}
+            switch (role)
+            {
+				case "BASIC":
+					account.Role = AccountRole.BASIC_USER.ToString();
+					break;
+				case "VIP":
+					account.Role = AccountRole.VIP_USER.ToString();
+					break;
+				case "DAILY":
+					account.Role = AccountRole.DAILY_USER.ToString();
+					break;
+				default:
+                    break;
+
+            }
+           
+			await _context.SaveChangesAsync();
+			return true;
+		}
 	}
 }

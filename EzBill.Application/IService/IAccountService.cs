@@ -27,5 +27,7 @@ namespace EzBill.Application.IService
 
 		Task<List<FillterAccountByEmail>> GetAccountByEmailForTrip(string email);
 
+        Task<bool> UpdateAccountRole(Guid accountId, string role);
+
 	}
 }
