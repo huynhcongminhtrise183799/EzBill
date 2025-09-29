@@ -11,5 +11,9 @@ namespace EzBill.Domain.IRepository
 	{
 		Task<bool> AddAccountSubscriptions(AccountSubscriptions accountSubscriptions);
 
+		Task<AccountSubscriptions?> GetByAccountId(Guid accountId);
+
+		Task<bool> UpdateSubscriptions(AccountSubscriptions accountSubscriptions);
+
 	}
 }

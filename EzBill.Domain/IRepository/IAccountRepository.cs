@@ -31,6 +31,7 @@ namespace EzBill.Domain.IRepository
 
         Task<List<Account>> GetAccountByEmailForTrip(string email);
 
+        Task<bool> UpdateAccountRole(Guid accountId, string role);
 
 
 	}

@@ -1,5 +1,6 @@
 ﻿using EzBill.Application.DTO.TaxRefund;
 using EzBill.Application.DTO.Trip;
+using EzBill.Application.Exceptions;
 using EzBill.Application.IService;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
@@ -14,16 +15,39 @@ namespace EzBill.Application.Service
     public class TripService : ITripService
     {
         private readonly ITripRepository _repo;
+        private readonly IAccountSubscriptionsRepository _accountSubscriptionsRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public TripService(ITripRepository repo)
+		public TripService(ITripRepository repo, IAccountSubscriptionsRepository accountSubscriptionsRepository, IAccountRepository accountRepository)
         {
             _repo = repo;
-        }
+			_accountSubscriptionsRepository = accountSubscriptionsRepository;
+			_accountRepository = accountRepository;
+		}
 
         public async Task<bool> AddTrip(Trip trip)
         {
-            return await _repo.AddTrip(trip);
-        }
+			var accountSubscription = await _accountSubscriptionsRepository.GetByAccountId(trip.CreatedBy);
+			var account = await _accountRepository.GetByIdAsync(trip.CreatedBy);
+			if (account == null) throw new AppException("Tài khoản không tồn tại", 404);
+			if (accountSubscription == null) throw new AppException("Tài khoản chưa đăng ký gói dịch vụ", 404);
+			if (accountSubscription.GroupRemaining < 0) throw new AppException("Hết lượt tạo group. Vui lòng mua gói mới", 400);
+            if(accountSubscription.Plan.MaxMembersPerTrip < trip.TripMembers.Count) throw new AppException($"Gói hiện tại chỉ cho phép tối đa {accountSubscription.Plan.MaxMembersPerTrip} thành viên trong một chuyến đi", 400);
+			var result =  await _repo.AddTrip(trip);
+			if (result)
+            {
+                accountSubscription.GroupRemaining -= 1;
+                if(accountSubscription.GroupRemaining == 0)
+                {
+                    accountSubscription.Status = SubscriptionStatus.INACTIVE.ToString();
+					await _accountSubscriptionsRepository.UpdateSubscriptions(accountSubscription);
+					await _accountRepository.UpdateAccountRole(account.AccountId, AccountRole.FREE_USER.ToString());
+				}
+				return true;
+			}
+			return false;
+
+		}
         public async Task<List<TripDto>> GetTripsForAccountAsync(Guid accountId)
         {
             var trips = await _repo.GetTripsByAccountIdAsync(accountId);

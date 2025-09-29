@@ -15,14 +15,18 @@ namespace EzBill.Controllers
 		private readonly PayOS _payOS;
 		private readonly IPaymentHistoryService _paymentHistoryService;
 		private readonly IAccountSubscriptionsService _service;
+		private readonly IAccountService _accountService;
+		private readonly IPlanService _planService;
 		private const string COMPLEDTED_PAYMENT = "COMPLETED";
 		private const string FAILED_PAYMENT = "FAILED";
 
-		public PaymentController(PayOS payOS, IPaymentHistoryService paymentHistoryService, IAccountSubscriptionsService service)
+		public PaymentController(PayOS payOS, IPaymentHistoryService paymentHistoryService, IAccountSubscriptionsService service, IAccountService accountService, IPlanService planService)
 		{
 			_payOS = payOS;
 			_paymentHistoryService = paymentHistoryService;
 			_service = service;
+			_accountService = accountService;
+			_planService = planService;
 		}
 
 		[HttpPost("buy-plan")]
@@ -99,21 +103,16 @@ namespace EzBill.Controllers
 		{
 			try
 			{
-			// verifyPaymentWebhookData trả về WebhookData (những trường: orderCode, amount, description, ...)
 				WebhookData webhookData = _payOS.verifyPaymentWebhookData(webhookBody);
 
-			// Bạn có thể kiểm tra success ở phần gốc (webhookBody) hoặc kiểm tra webhookData.code == "00"
 				if (webhookBody != null && webhookBody.success)
 				{
-				// truy cập trực tiếp các trường trong WebhookData (camelCase)
-					var orderCode = webhookData.orderCode;   // long
+					var orderCode = webhookData.orderCode;   
 
-					// Cập nhật trạng thái thanh toán trong hệ thống của bạn
 					
 					var payment = await _paymentHistoryService.GetByOrderCode(orderCode);
 					if (payment == null)
 					{
-						// Log lỗi không tìm thấy đơn hàng hoặc cập nhật thất bại
 						return BadRequest(new { code = "-1", message = "Order not found or update failed" });
 					}
 					var updateResult = await _paymentHistoryService.ChangePaymentStatus(orderCode, COMPLEDTED_PAYMENT);
@@ -127,6 +126,13 @@ namespace EzBill.Controllers
 					{
 						return BadRequest(new { code = "-1", message = "Add subscription failed" });
 					}
+					var plan = await _planService.GetPlanById((Guid)payment.PlanId);
+					if(plan == null) return BadRequest(new { code = "-1", message = "Plan not found" });
+					var result = await _accountService.UpdateAccountRole(payment.FromAccountId, plan.Type);
+					if (!result)
+					{
+						return BadRequest(new { code = "-1", message = "Update account role failed" });
+					}
 				}
 				else
 				{
@@ -136,7 +142,6 @@ namespace EzBill.Controllers
 
 				}
 
-				// trả 200 để payOS biết đã nhận
 				return Ok(new { code = "00", message = "processed" });
 			}
 			catch (Exception ex)
