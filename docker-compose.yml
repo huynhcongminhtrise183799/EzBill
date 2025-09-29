@@ -28,14 +28,7 @@ services:
     volumes:
       - ezbill_pgdata:/var/lib/postgresql/data
 
-  ezbill-mongo:
-    image: mongo:6.0
-    container_name: ezbill-mongo
-    restart: always
-    ports:
-      - "${MONGO_PORT}:27017"
-    volumes:
-      - ezbill_mongo_data:/data/db
+  
 
 volumes:
   ezbill_pgdata:
