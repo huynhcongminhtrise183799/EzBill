@@ -146,8 +146,11 @@ namespace EzBill.Infrastructure
                 entity.HasKey(e => e.SettlementId);
                 entity.Property(e => e.SettlementId).ValueGeneratedOnAdd();
 
+                entity.Property(s => s.CreateAt).HasDefaultValueSql("NOW()")
+                      .HasColumnType("timestamp without time zone");
 
-                entity.HasOne(e => e.Trip)
+
+				entity.HasOne(e => e.Trip)
                       .WithMany(e => e.Settlements)
                       .HasForeignKey(e => e.TripId)
                       .HasConstraintName("FK_Settlement_Trip");

@@ -116,5 +116,40 @@ namespace EzBill.Infrastructure.Repository
 			return true;
 		}
 
+		public async Task<List<Settlement>?> GetAllSettlementsByAccountIdAndMonth(Guid accountId, int month, int year)
+		{
+			var startDate = new DateTime(year, month, 1);
+			var endDate = startDate.AddMonths(1).AddDays(-1);
+
+			return await _context.Settlements
+				.Include(s => s.FromAccount)
+				.Include(s => s.ToAccount)
+				.Include(s => s.Trip)
+				.Where(s => (s.FromAccountId == accountId || s.ToAccountId == accountId)
+							&& s.CreateAt >= startDate && s.CreateAt <= endDate)
+				.ToListAsync();
+		}
+
+		public async Task<List<Settlement>?> GetAllSettlementNearestMonth(Guid accountId, int months)
+		{
+			// Tính ngày đầu của tháng hiện tại
+			var now = DateTime.UtcNow; // hoặc DateTime.Now nếu bạn muốn theo local time
+			var currentMonthStart = new DateTime(now.Year, now.Month, 1);
+
+			// Tính ngày đầu của mốc "months" tháng trước
+			var startDate = currentMonthStart.AddMonths(-months + 1);
+
+			// Ngày cuối của tháng hiện tại
+			var endDate = currentMonthStart.AddMonths(1).AddDays(-1);
+
+			return await _context.Settlements
+				.Include(s => s.FromAccount)
+				.Include(s => s.ToAccount)
+				.Include(s => s.Trip)
+				.Where(s => (s.FromAccountId == accountId || s.ToAccountId == accountId)
+							&& s.CreateAt >= startDate && s.CreateAt <= endDate)
+				.ToListAsync();
+		}
+
 	}
 }

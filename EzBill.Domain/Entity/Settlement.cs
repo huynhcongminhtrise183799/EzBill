@@ -22,7 +22,9 @@ namespace EzBill.Domain.Entity
 
         public double Amount { get; set; }
 
-        public string Status { get; set; }
+        public DateTime CreateAt { get; set; }
+
+		public string Status { get; set; }
 
         public Trip Trip { get; set; }
 
