@@ -64,5 +64,21 @@ namespace EzBill.Controllers
 			return BadRequest(new { message = "Trả nợ thất bại" });
 		}
 
+		[HttpGet("statistics/{accountId}")]
+		public async Task<IActionResult> GetSettlementStatistics([FromRoute] Guid accountId, [FromQuery] string date)
+		{
+			var monthDate = DateOnly.ParseExact(date, "yyyy-MM");
+			var month = monthDate.Month;
+			var year = monthDate.Year;
+			var result = await _settlementService.GetAllSettlementByMonthAndAccount(accountId, month, year);
+			return Ok(result);
+		}
+
+		[HttpGet("statistics/nearest/{accountId}")]
+		public async Task<IActionResult> GetNearestSettlementStatistics([FromRoute] Guid accountId, [FromQuery] int months)
+		{
+			var result = await _settlementService.GetAllSettlementNearestMonthByAccount(accountId, months);
+			return Ok(result);
+		}
 	}
 }

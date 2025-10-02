@@ -23,5 +23,10 @@ namespace EzBill.Domain.IRepository
 
         Task<bool> DeleteSettlement(List<Guid> settlements);
 
+        Task<List<Settlement>?> GetAllSettlementsByAccountIdAndMonth(Guid accountId, int month, int year);
+
+        Task<List<Settlement>?> GetAllSettlementNearestMonth(Guid accountId, int months);
+
+
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using EzBill.Application.DTO.Settlement;
+using EzBill.Application.ServiceModel.Settlement;
 using EzBill.Domain.Entity;
 
 
@@ -15,6 +16,10 @@ namespace EzBill.Application.IService
 		Task<List<SettlementResultDto>> GetSettlementsByAccountIdWithFiltterAsync(Guid accountId, string state);
 
         Task<bool> ChangeSettlementStatusToPaid(Guid settlementId);
+
+        Task<SettlementStatisticsModel?> GetAllSettlementByMonthAndAccount(Guid accountId, int month, int year);
+
+		Task<List<SettlementStatisticsModel>?> GetAllSettlementNearestMonthByAccount(Guid accountId, int months);
 
 
 	}

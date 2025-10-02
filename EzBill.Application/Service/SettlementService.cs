@@ -1,6 +1,7 @@
 ﻿using EzBill.Application.DTO.Settlement;
 using EzBill.Application.Exceptions;
 using EzBill.Application.IService;
+using EzBill.Application.ServiceModel.Settlement;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using System;
@@ -102,7 +103,8 @@ namespace EzBill.Application.Service
                                     FromAccountId = userId,
                                     ToAccountId = payerId,
                                     Amount = toSettle,
-                                    Status = SettlementStatus.UNPAID.ToString()
+									CreateAt = DateTime.Now,
+									Status = SettlementStatus.UNPAID.ToString()
                                 });
                             }
                         }
@@ -116,7 +118,8 @@ namespace EzBill.Application.Service
                                 FromAccountId = userId,
                                 ToAccountId = payerId,
                                 Amount = use.AmountFromPersonal.Value,
-                                Status = SettlementStatus.UNPAID.ToString()
+								CreateAt = DateTime.Now,
+								Status = SettlementStatus.UNPAID.ToString()
                             });
                         }
                     }
@@ -136,7 +139,8 @@ namespace EzBill.Application.Service
                             FromAccountId = refund.RefundedBy,
                             ToAccountId = usage.AccountId,
                             Amount = usage.AmountReceived,
-                            Status = SettlementStatus.UNPAID.ToString()
+                            CreateAt = DateTime.Now,
+							Status = SettlementStatus.UNPAID.ToString()
                         });
                     }
                 }
@@ -156,7 +160,8 @@ namespace EzBill.Application.Service
                         FromAccountId = tripOwnerId,  
                         ToAccountId = member.AccountId,
                         Amount = remainingBudget,
-                        Status = SettlementStatus.UNPAID.ToString()
+						CreateAt = DateTime.Now,
+						Status = SettlementStatus.UNPAID.ToString()
                     });
 
                     memberBudgets[member.AccountId] = 0; 
@@ -179,7 +184,83 @@ namespace EzBill.Application.Service
             return await MapToDto(settlements);
         }
 
-        public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
+		public async Task<SettlementStatisticsModel?> GetAllSettlementByMonthAndAccount(Guid accountId, int month, int year)
+		{
+			// settlements tháng hiện tại
+			var settlements = await _settlementRepository.GetAllSettlementsByAccountIdAndMonth(accountId, month, year);
+			if (settlements == null || !settlements.Any()) return null;
+
+			// Tính tháng trước
+			var currentMonthDate = new DateOnly(year, month, 1);
+			var lastMonthDate = currentMonthDate.AddMonths(-1);
+
+			var lastSettlements = await _settlementRepository.GetAllSettlementsByAccountIdAndMonth(
+				accountId, lastMonthDate.Month, lastMonthDate.Year);
+
+			// Tính toán tháng hiện tại
+			var totalDebt = settlements.Where(s => s.FromAccountId == accountId).Sum(s => s.Amount);
+			var totalCredit = settlements.Where(s => s.ToAccountId == accountId).Sum(s => s.Amount);
+			var netBalance = totalCredit - totalDebt;
+
+			// Tính toán tháng trước (nếu có)
+            double? lastCredit = null;
+            double? lastDebt = null;
+			if (lastSettlements != null && lastSettlements.Any())
+			{
+				 lastDebt = lastSettlements.Where(s => s.FromAccountId == accountId).Sum(s => s.Amount);
+				 lastCredit = lastSettlements.Where(s => s.ToAccountId == accountId).Sum(s => s.Amount);
+			}
+
+			var result = new SettlementStatisticsModel
+			{
+				Year = year,
+				Month = month,
+				TotalAmountDebt = totalDebt,
+				TotalAmountCredit = totalCredit,
+				TotalNetBalance = netBalance,
+				TotalAmountCreditChangedLastMonth = lastCredit.HasValue
+		? totalCredit - lastCredit.Value // 10: C = 100, D = 80
+                                        // 9: C = 90 , D = 100
+		: totalCredit,
+				TotalAmountDebtChangedLastMonth = lastDebt.HasValue
+		? totalDebt - lastDebt.Value
+		: totalDebt
+			};
+
+
+			return result;
+		}
+
+
+		public async Task<List<SettlementStatisticsModel>?> GetAllSettlementNearestMonthByAccount(Guid accountId, int months)
+		{
+			var settlements = await _settlementRepository.GetAllSettlementNearestMonth(accountId, months);
+			if (settlements == null || !settlements.Any()) return null;
+
+			var result = settlements
+				.GroupBy(s => new { s.CreateAt.Year, s.CreateAt.Month })
+				.Select(g =>
+				{
+					var totalDebt = g.Where(s => s.FromAccountId == accountId).Sum(s => s.Amount);
+					var totalCredit = g.Where(s => s.ToAccountId == accountId).Sum(s => s.Amount);
+
+					return new SettlementStatisticsModel
+					{
+						Year = g.Key.Year,
+						Month = g.Key.Month,
+						TotalAmountDebt = totalDebt,
+						TotalAmountCredit = totalCredit,
+						TotalNetBalance = totalCredit - totalDebt
+					};
+				})
+				.OrderByDescending(m => new DateOnly(m.Year, m.Month, 1))
+				.ToList();
+
+			return result;
+		}
+
+
+		public async Task<List<Settlement>?> GetByDebtorIdAsync(Guid debtorId)
         {
             var result = await _settlementRepository.GetUnPaidByDebtorIdAsync(debtorId);
             return result ?? new List<Settlement>();
