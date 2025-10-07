@@ -1,4 +1,5 @@
-﻿using EzBill.Domain.IRepository;
+﻿using EzBill.Domain.Entity;
+using EzBill.Domain.IRepository;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,31 @@ namespace EzBill.Infrastructure.Repository
 		{
 			_context = context;
 		}
+
+		public async Task<bool> AddTripMember(Guid accountId, Guid tripId)
+		{
+			// Kiểm tra xem thành viên đã tồn tại trong chuyến đi chưa
+			bool exists = await _context.TripMembers
+				.AnyAsync(tm => tm.TripId == tripId && tm.AccountId == accountId);
+
+			if (exists)
+				return false; // Thành viên đã tồn tại
+
+			var newTripMember = new TripMember
+			{
+				AccountId = accountId,
+				TripId = tripId,
+				Amount = 0,
+				AmountRemainInTrip = 0, 
+				Status = TripMemberStatus.ACTIVE.ToString(),
+			};
+
+			await _context.TripMembers.AddAsync(newTripMember);
+			await _context.SaveChangesAsync();
+
+			return true;
+		}
+
 
 		public async Task<bool> UpdateAmountRemain(Guid tripId, Guid accountId, double newAmount)
 		{

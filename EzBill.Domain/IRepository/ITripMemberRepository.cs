@@ -9,5 +9,7 @@ namespace EzBill.Domain.IRepository
 	public interface ITripMemberRepository
 	{
 		Task<bool> UpdateAmountRemain(Guid tripId, Guid accountId, double newAmount);
+
+		Task<bool> AddTripMember(Guid accountId, Guid tripId);
 	}
 }

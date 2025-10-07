@@ -1,6 +1,8 @@
 ﻿using EzBill.Application.DTO;
 using EzBill.Application.IService;
+using EzBill.Application.ServiceModel.Trip;
 using EzBill.Domain.Entity;
+using EzBill.Models.Request.Trip;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -81,5 +83,26 @@ namespace EzBill.Controllers
 
             return Ok(tripDetails);
         }
-    }
+        [HttpPost("trip/member")]
+		public async Task<IActionResult> AddTripMember([FromBody] AddTripMemberRequest request)
+		{
+            var model = new AddTripMemberModel
+            {
+                AccountId = request.AccountId,
+                TripId = request.TripId
+            };
+			var result = await _tripService.AddMoreTripMember(model);
+			if (result)
+			{
+				return Ok(new
+				{
+					message = "Thêm thành viên cho chuyến đi thành công"
+				});
+			}
+			return BadRequest(new
+			{
+				message = "Thất bại"
+			});
+		}
+	}
 }

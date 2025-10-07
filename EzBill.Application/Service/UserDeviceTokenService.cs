@@ -29,7 +29,7 @@ namespace EzBill.Application.Service
 
 		public async Task<bool> SaveDeviceToken(Guid accountId, string fcmToken)
 		{
-			var	existingToken	=	await	_userDeviceTokenRepository.GetDeviceTokenByFCMAndDeviceId(fcmToken);
+			var	existingToken	=	await _userDeviceTokenRepository.GetDeviceTokenByFCMAndDeviceId(fcmToken);
 			if (existingToken == null)
 			{
 				var newDeviceToken = new UserDeviceToken
