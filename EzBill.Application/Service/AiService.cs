@@ -15,6 +15,7 @@ namespace Ezbill.Infrastructure.Services
 
         public AiService(IConfiguration config)
         {
+            //config
             _apiKey = config["OpenAI:ApiKey"] ?? throw new ArgumentNullException("OpenAI API key not found");
             _model = config["OpenAI:Model"] ?? "gpt-4o-mini";
             _systemPrompt = config["OpenAI:SystemPrompt"] ?? "Bạn là trợ lý Ezbill AI.";
