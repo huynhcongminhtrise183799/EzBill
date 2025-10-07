@@ -2,6 +2,7 @@
 using EzBill.Application.DTO.Trip;
 using EzBill.Application.Exceptions;
 using EzBill.Application.IService;
+using EzBill.Application.ServiceModel.Trip;
 using EzBill.Domain.Entity;
 using EzBill.Domain.IRepository;
 using System;
@@ -17,15 +18,17 @@ namespace EzBill.Application.Service
         private readonly ITripRepository _repo;
         private readonly IAccountSubscriptionsRepository _accountSubscriptionsRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly ITripMemberRepository _tripMemberRepository;
 
-		public TripService(ITripRepository repo, IAccountSubscriptionsRepository accountSubscriptionsRepository, IAccountRepository accountRepository)
-        {
-            _repo = repo;
+		public TripService(ITripRepository repo, IAccountSubscriptionsRepository accountSubscriptionsRepository, IAccountRepository accountRepository, ITripMemberRepository tripMemberRepository)
+		{
+			_repo = repo;
 			_accountSubscriptionsRepository = accountSubscriptionsRepository;
 			_accountRepository = accountRepository;
+			_tripMemberRepository = tripMemberRepository;
 		}
 
-        public async Task<bool> AddTrip(Trip trip)
+		public async Task<bool> AddTrip(Trip trip)
         {
 			var accountSubscription = await _accountSubscriptionsRepository.GetByAccountId(trip.CreatedBy);
 			var account = await _accountRepository.GetByIdAsync(trip.CreatedBy);
@@ -132,6 +135,9 @@ namespace EzBill.Application.Service
             };
         }
 
-
-    }
+		public Task<bool> AddMoreTripMember(AddTripMemberModel addTripMemberModel)
+		{
+			return _tripMemberRepository.AddTripMember(addTripMemberModel.AccountId,addTripMemberModel.TripId);
+		}
+	}
 }
