@@ -1,0 +1,3 @@
+﻿Bạn vẫn còn nợ {toNickName} {amount:N0}đ trong chuyến {tripName}. Mau thanh toán nhé!
+{toNickName} đang đợi bạn trả {amount:N0}đ cho chuyến đi {tripName}.
+Đừng quên, bạn còn nợ {amount:N0}đ cho {toNickName} trong chuyến đi {tripName} đó!

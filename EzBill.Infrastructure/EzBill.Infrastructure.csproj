@@ -16,6 +16,11 @@
 
 	</ItemGroup>
 	<ItemGroup>
+		<None Update="Resources\debt_messages.txt">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
 	  <ProjectReference Include="..\EzBill.Application\EzBill.Application.csproj" />
 	  <ProjectReference Include="..\EzBill.Domain\EzBill.Domain.csproj" />
 	</ItemGroup>
