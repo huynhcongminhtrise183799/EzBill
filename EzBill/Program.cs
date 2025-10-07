@@ -1,4 +1,5 @@
 ﻿
+using Ezbill.Infrastructure.Services;
 using EzBill.Application.IService;
 using EzBill.Application.Service;
 using EzBill.ChatHubs;
@@ -15,7 +16,6 @@ using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Net.payOS;
@@ -155,7 +155,10 @@ namespace EzBill
 			));
 			builder.Services.AddHostedService<ReminerSettlementService>();
 
-			var app = builder.Build();
+            builder.Services.AddScoped<IAiService, AiService>();
+
+
+            var app = builder.Build();
 			app.UseCors("AllowAll");
 			// Configure the HTTP request pipeline.
 			//if (app.Environment.IsDevelopment())
