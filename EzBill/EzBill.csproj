@@ -7,7 +7,13 @@
     <UserSecretsId>5bf66a67-cb57-498a-811f-6006464c5c54</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
-
+	<ItemGroup>
+		<None Include="..\EzBill.Infrastructure\Resources\debt_messages.txt">
+			<Link>Resources\debt_messages.txt</Link>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</None>
+	</ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.17" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.0" />

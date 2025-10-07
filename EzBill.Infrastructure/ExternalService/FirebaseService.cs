@@ -27,7 +27,17 @@ namespace EzBill.Infrastructure.ExternalService
 		public async Task<List<string>> SendDebtReminderAsync(IEnumerable<Settlement> unpaidSettlements)
 		{
 			var responses = new List<string>();
+			var random = new Random();
 
+			// Đọc tất cả câu template từ file
+			var filePath = Path.Combine(AppContext.BaseDirectory, "Resources", "debt_messages.txt");
+
+			if (!File.Exists(filePath))
+			{
+				throw new FileNotFoundException("Debt message file not found", filePath);
+			}
+
+			var messageTemplates = await File.ReadAllLinesAsync(filePath);
 			foreach (var settlement in unpaidSettlements)
 			{
 				var fromAccountId = settlement.FromAccountId;
@@ -37,7 +47,14 @@ namespace EzBill.Infrastructure.ExternalService
 				var toNickName = settlement.ToAccount?.NickName ?? "Người cho vay";
 				var tripName = settlement.Trip?.TripName ?? "Chuyến đi";
 
-				// Token của người nợ
+				string debtorMessage = messageTemplates[random.Next(messageTemplates.Length)];
+				debtorMessage = debtorMessage
+					.Replace("{fromNickName}", fromNickName)
+					.Replace("{toNickName}", toNickName)
+					.Replace("{tripName}", tripName)
+					.Replace("{amount:N0}", amount.ToString("N0"));
+
+				// Gửi cho người nợ
 				var fromTokens = await _userDeviceTokenService.GetDeviceTokensByAccountId(fromAccountId);
 				if (fromTokens?.Any() == true)
 				{
@@ -47,7 +64,7 @@ namespace EzBill.Infrastructure.ExternalService
 						Notification = new Notification
 						{
 							Title = "Nhắc nợ",
-							Body = $"Bạn đang nợ {toNickName} trong chuyến đi {tripName} {amount:N0}đ. Vui lòng thanh toán!"
+							Body = debtorMessage
 						}
 					};
 
@@ -55,17 +72,18 @@ namespace EzBill.Infrastructure.ExternalService
 					responses.Add($"DebtReminder->Debtor={fromNickName}, Success={fromResponse.SuccessCount}, Fail={fromResponse.FailureCount}");
 				}
 
-				// Token của người được nợ (thông báo cho họ rằng có người chưa trả)
+				// Gửi cho người được nợ (người cho vay)
 				var toTokens = await _userDeviceTokenService.GetDeviceTokensByAccountId(toAccountId);
 				if (toTokens?.Any() == true)
 				{
+					var creditorMessage = $"{fromNickName} vẫn đang nợ bạn {amount:N0}đ trong chuyến đi {tripName}";
 					var toMessage = new MulticastMessage
 					{
 						Tokens = toTokens,
 						Notification = new Notification
 						{
 							Title = "Thông báo nợ",
-							Body = $"{fromNickName} vẫn đang nợ bạn {amount:N0}đ trong chuyến đi {tripName}"
+							Body = creditorMessage
 						}
 					};
 
@@ -76,6 +94,7 @@ namespace EzBill.Infrastructure.ExternalService
 
 			return responses;
 		}
+
 
 		public async Task<List<string>> SendNotiConfirmedAsync(Guid toAccountId)
 		{
