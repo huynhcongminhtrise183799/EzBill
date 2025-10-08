@@ -16,5 +16,7 @@ namespace EzBill.Application.DTO.Trip
 
 		public string Email { get; set; }
         public string Status { get; set; }
+
+        public double? Amount { get; set; }
     }
 }

@@ -13,8 +13,9 @@ namespace EzBill.Application.DTO.Trip
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public double? Budget { get; set; }
+		public string? AvatarTrip { get; set; }
 
-        public double TotalEventAmount { get; set; }       
+		public double TotalEventAmount { get; set; }       
         public double TotalTaxRefundAmount { get; set; }   
         public double TotalUsedAmount { get; set; }
 

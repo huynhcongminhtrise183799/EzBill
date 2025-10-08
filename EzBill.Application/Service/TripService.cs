@@ -60,13 +60,15 @@ namespace EzBill.Application.Service
                 TripName = t.TripName,
                 StartDate = t.StartDate,
                 EndDate = t.EndDate,
-                Budget = t.Budget, 
-                Members = t.TripMembers.Select(m => new TripMemberDto
+                Budget = t.Budget,
+				AvatarTrip = t.AvatarTrip,
+				Members = t.TripMembers.Select(m => new TripMemberDto
                 {
                     AccountId = m.AccountId,
                     Email = m.Account.Email,
 					Avatar = m.Account.AvatarUrl,
 					NickName = m.Account.NickName,
+					Amount = m.Amount,
 					Status = m.Status
                 }).ToList()
             }).ToList();
@@ -117,6 +119,7 @@ namespace EzBill.Application.Service
                 Email = m.Account?.Email ?? "",
 				Avatar = m.Account?.AvatarUrl,
 				NickName = m.Account?.NickName,
+				Amount = m.Amount,
 				Status = m.Status
             }).ToList();
 
@@ -126,7 +129,8 @@ namespace EzBill.Application.Service
                 StartDate = trip.StartDate,
                 EndDate = trip.EndDate,
                 Budget = trip.Budget,
-                TotalEventAmount = totalEventAmount,
+				AvatarTrip = trip.AvatarTrip,
+				TotalEventAmount = totalEventAmount,
                 TotalTaxRefundAmount = totalTaxRefundAmount,
                 TotalUsedAmount = totalUsedAmount,
                 EventContributions = eventContributions,
@@ -139,5 +143,33 @@ namespace EzBill.Application.Service
 		{
 			return _tripMemberRepository.AddTripMember(addTripMemberModel.AccountId,addTripMemberModel.TripId);
 		}
+
+		public async Task<bool> UpdateTripMember(UpdateTripModel updateTripMemberModel, Guid tripId)
+		{
+            var exsitingTrip = await _repo.GetByIdAsync(tripId);
+			if (exsitingTrip == null) throw new AppException("Chuyến đi không tồn tại", 404);
+			var tripMember = updateTripMemberModel.TripMembers.Select(tm => new TripMember
+			{
+				TripId = tripId,
+				AccountId = tm.AccountId,
+				Amount = tm.Amount,
+				AmountRemainInTrip = tm.Amount,
+			}).ToList();
+            var updateTripModel = new Trip
+            {
+				TripId = tripId,
+				TripName = updateTripMemberModel.Name,
+				StartDate = updateTripMemberModel.StartDate,
+				EndDate = updateTripMemberModel.EndDate,
+				Budget = exsitingTrip.Budget + updateTripMemberModel.Budget,
+				AvatarTrip = updateTripMemberModel.AvatarTrip,
+                Status = updateTripMemberModel.isDelete == true ? TripStatus.INACTIVE.ToString() : TripStatus.ACTIVE.ToString(),
+
+			};
+			var result = await _repo.UpdateTripAsync(updateTripModel);
+			if (!result) return false;
+			return await _tripMemberRepository.UpdateTripMember(tripMember, tripId);
+		}
+		}
 	}
-}
+

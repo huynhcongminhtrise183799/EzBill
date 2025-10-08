@@ -17,6 +17,8 @@ namespace EzBill.Application.IService
 
         Task<bool> AddMoreTripMember(AddTripMemberModel addTripMemberModel);
 
+        Task<bool> UpdateTripMember(UpdateTripModel updateTripMemberModel, Guid tripId);
+
 
     }
 }

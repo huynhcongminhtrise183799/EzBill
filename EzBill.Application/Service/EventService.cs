@@ -49,7 +49,7 @@ namespace EzBill.Application.Service
 			var trip = await _tripRepository.GetByIdAsync(request.TripId);
 			if (trip == null) throw new Exception("Không tìm thấy trip.");
 
-			var allMembers = await _tripRepository.GetTripMembersAsync(request.TripId);
+			var allMembers = await _tripRepository.GetTripMembersActiveAsync(request.TripId);
 			if (allMembers == null || !allMembers.Any())
 				throw new Exception("Không tìm thấy thành viên nào trong chuyến đi.");
 
