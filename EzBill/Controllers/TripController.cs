@@ -113,7 +113,7 @@ namespace EzBill.Controllers
                 Name = request.Name,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-				Budget = request.Budget,
+				Budget = request.AddMoreBudgetInTrip,
 				isDelete = request.isDelete,
 				TripMembers = request.TripMembers.Select(tm => new UpdateTripMemberModel
 				{
