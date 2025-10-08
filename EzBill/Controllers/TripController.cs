@@ -39,7 +39,8 @@ namespace EzBill.Controllers
                 StartDate = tripDTO.StartDate,
                 EndDate = tripDTO.EndDate,
                 CreatedBy = Guid.Parse(accountId),
-                Budget = tripDTO.Budget,
+				AvatarTrip = tripDTO.AvatarTrip,
+				Budget = tripDTO.Budget,
                 Status = TripStatus.ACTIVE.ToString(),
                 TripMembers = tripDTO.TripMember.Select(t => new TripMember
                 {
@@ -97,6 +98,36 @@ namespace EzBill.Controllers
 				return Ok(new
 				{
 					message = "Thêm thành viên cho chuyến đi thành công"
+				});
+			}
+			return BadRequest(new
+			{
+				message = "Thất bại"
+			});
+		}
+        [HttpPut("trip/{tripId}")]
+        public async Task<IActionResult> UpdateTrip([FromBody] UpdateTripRequest request, [FromRoute] Guid tripId)
+        {
+            var model = new UpdateTripModel
+            {
+                Name = request.Name,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+				Budget = request.Budget,
+				isDelete = request.isDelete,
+				TripMembers = request.TripMembers.Select(tm => new UpdateTripMemberModel
+				{
+					AccountId = tm.AccountId,
+					Amount = tm.Amount,
+					TripId = tm.TripId
+				}).ToList()
+			};
+			var result = await _tripService.UpdateTripMember(model, tripId);
+			if (result)
+			{
+				return Ok(new
+				{
+					message = "Cập nhật chuyến đi thành công"
 				});
 			}
 			return BadRequest(new

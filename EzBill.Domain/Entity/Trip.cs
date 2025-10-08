@@ -22,7 +22,9 @@ namespace EzBill.Domain.Entity
 
         public DateOnly EndDate { get; set; }
 
-        public double? Budget { get; set; }
+        public string? AvatarTrip { get; set; }
+
+		public double? Budget { get; set; }
 
         public string Status { get; set; } // ACTIVE, INACTIVE
 

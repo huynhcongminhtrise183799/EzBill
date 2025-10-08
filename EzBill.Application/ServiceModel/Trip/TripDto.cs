@@ -13,6 +13,7 @@ namespace EzBill.Application.DTO.Trip
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public double? Budget { get; set; }
-        public List<TripMemberDto> Members { get; set; }
+		public string? AvatarTrip { get; set; }
+		public List<TripMemberDto> Members { get; set; }
     }
 }

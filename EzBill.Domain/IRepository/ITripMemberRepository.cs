@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EzBill.Domain.Entity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,7 @@ namespace EzBill.Domain.IRepository
 		Task<bool> UpdateAmountRemain(Guid tripId, Guid accountId, double newAmount);
 
 		Task<bool> AddTripMember(Guid accountId, Guid tripId);
+
+		Task<bool> UpdateTripMember(List<TripMember> accountId, Guid tripId);
 	}
 }

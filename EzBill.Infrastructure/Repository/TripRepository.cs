@@ -44,7 +44,7 @@ namespace EzBill.Infrastructure.Repository
         public async Task<List<Trip>> GetTripsByAccountIdAsync(Guid accountId)
         {
             var trips = await _context.trips
-                .Include(t => t.TripMembers)               
+                .Include(t => t.TripMembers.Where(tm => tm.Status == TripMemberStatus.ACTIVE.ToString()))               
                     .ThenInclude(tm => tm.Account)         
                 .Where(t => t.CreatedBy == accountId ||
                             t.TripMembers.Any(tm => tm.AccountId == accountId))
@@ -55,7 +55,7 @@ namespace EzBill.Infrastructure.Repository
         public async Task<Trip> GetTripDetailsByIdAsync(Guid tripId)
         {
             var trip = await _context.trips
-                .Include(t => t.TripMembers)
+                .Include (t => t.TripMembers.Where(tm => tm.Status == TripMemberStatus.ACTIVE.ToString()))
                     .ThenInclude(tm => tm.Account)                 
                 .Include(t => t.Events)
                     .ThenInclude(e => e.Event_Use)                 
@@ -82,8 +82,17 @@ namespace EzBill.Infrastructure.Repository
             tripExist.StartDate = trip.StartDate;
             tripExist.EndDate = trip.EndDate;
             tripExist.Status = trip.Status;
-            await _context.SaveChangesAsync();
+			tripExist.AvatarTrip = trip.AvatarTrip;
+			await _context.SaveChangesAsync();
             return true;    
+		}
+
+		public async Task<List<TripMember>> GetTripMembersActiveAsync(Guid tripId)
+		{
+			return await _context.TripMembers.Include(t => t.Account)
+			   .Where(tm => tm.TripId == tripId && tm.Status == TripMemberStatus.ACTIVE.ToString())
+			   .ToListAsync();
+
 		}
 	}
 }
