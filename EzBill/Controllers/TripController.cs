@@ -105,7 +105,7 @@ namespace EzBill.Controllers
 				message = "Thất bại"
 			});
 		}
-        [HttpPut("trip/{tripId}")]
+        [HttpPatch("trip/{tripId}")]
         public async Task<IActionResult> UpdateTrip([FromBody] UpdateTripRequest request, [FromRoute] Guid tripId)
         {
             var model = new UpdateTripModel
