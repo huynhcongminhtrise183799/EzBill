@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EzBill.Infrastructure.Migrations
 {
     [DbContext(typeof(EzBillDbContext))]
-    [Migration("20250707162758_UpdateTableTrip")]
-    partial class UpdateTableTrip
+    [Migration("20251013084751_AddDb")]
+    partial class AddDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,7 +31,17 @@ namespace EzBill.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Gender")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("NickName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -39,9 +49,58 @@ namespace EzBill.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("QrCodeUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("AccountId");
 
                     b.ToTable("Account", (string)null);
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.AccountSubscriptions", b =>
+                {
+                    b.Property<Guid>("SubscriptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("GroupRemaining")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("SubscriptionId");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("PlanId");
+
+                    b.ToTable("AccountSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.Event", b =>
@@ -56,8 +115,12 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<double>("AmountOriginal")
                         .HasColumnType("double precision");
 
-                    b.Property<char>("Currency")
-                        .HasColumnType("character(1)");
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("EventDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("EventDescription")
                         .IsRequired()
@@ -70,10 +133,14 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<double?>("ExchangeRate")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid>("PaidBy")
+                    b.Property<Guid?>("PaidBy")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ReceiptUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SplitType")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("TripId")
@@ -96,11 +163,40 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
+                    b.Property<double?>("AmountFromGroup")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("AmountFromPersonal")
+                        .HasColumnType("double precision");
+
                     b.HasKey("AccountId", "EventId");
 
                     b.HasIndex("EventId");
 
                     b.ToTable("Event_Use", (string)null);
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.ForgotPassword", b =>
+                {
+                    b.Property<Guid>("ForgotPasswordId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExpireAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OTP")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ForgotPasswordId");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("ForgotPassword", (string)null);
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.PaymentHistory", b =>
@@ -115,6 +211,15 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<Guid>("FromAccountId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("OrderCode")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateOnly>("PaymentDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("PaymentType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -122,29 +227,75 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<string>("PaymentUrlBill")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("PlanId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("RelatedTaxRefundId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("TaxRefundId")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ToAccountId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ToAccountId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TripId")
+                    b.Property<Guid?>("TripId")
                         .HasColumnType("uuid");
 
                     b.HasKey("PaymentHistoryId");
 
                     b.HasIndex("FromAccountId");
 
-                    b.HasIndex("TaxRefundId");
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("RelatedTaxRefundId");
 
                     b.HasIndex("ToAccountId");
 
                     b.HasIndex("TripId");
 
                     b.ToTable("PaymentHistory", (string)null);
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.Plan", b =>
+                {
+                    b.Property<Guid>("PlanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BillingCycle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaxGroups")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxMembersPerTrip")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("PlanName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("PlanId");
+
+                    b.ToTable("Plan", (string)null);
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.Settlement", b =>
@@ -155,6 +306,11 @@ namespace EzBill.Infrastructure.Migrations
 
                     b.Property<double>("Amount")
                         .HasColumnType("double precision");
+
+                    b.Property<DateTime>("CreateAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<Guid>("FromAccountId")
                         .HasColumnType("uuid");
@@ -186,9 +342,6 @@ namespace EzBill.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
                     b.Property<bool>("IsGroupMoneyUsed")
                         .HasColumnType("boolean");
 
@@ -212,13 +365,31 @@ namespace EzBill.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("TaxRefundId");
+                    b.Property<Guid>("TripId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("EventId");
+                    b.HasKey("TaxRefundId");
 
                     b.HasIndex("RefundedBy");
 
+                    b.HasIndex("TripId");
+
                     b.ToTable("TaxRefund", (string)null);
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.TaxRefund_Event", b =>
+                {
+                    b.Property<Guid>("TaxRefundId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("TaxRefundId", "EventId");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("TaxRefund_Event", (string)null);
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.TaxRefund_Usage", b =>
@@ -248,6 +419,9 @@ namespace EzBill.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("AvatarTrip")
+                        .HasColumnType("text");
+
                     b.Property<double?>("Budget")
                         .HasColumnType("double precision");
 
@@ -259,6 +433,10 @@ namespace EzBill.Infrastructure.Migrations
 
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("TripName")
                         .IsRequired()
@@ -282,6 +460,9 @@ namespace EzBill.Infrastructure.Migrations
                     b.Property<double?>("Amount")
                         .HasColumnType("double precision");
 
+                    b.Property<double?>("AmountRemainInTrip")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
@@ -293,13 +474,52 @@ namespace EzBill.Infrastructure.Migrations
                     b.ToTable("TripMember", (string)null);
                 });
 
+            modelBuilder.Entity("EzBill.Domain.Entity.UserDeviceToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FCMToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("UserDeviceToken", (string)null);
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.AccountSubscriptions", b =>
+                {
+                    b.HasOne("EzBill.Domain.Entity.Account", "Account")
+                        .WithMany("AccountSubscriptions")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_AccountSubscriptions_Account");
+
+                    b.HasOne("EzBill.Domain.Entity.Plan", "Plan")
+                        .WithMany("AccountSubscriptions")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_AccountSubscriptions_Plan");
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Plan");
+                });
+
             modelBuilder.Entity("EzBill.Domain.Entity.Event", b =>
                 {
                     b.HasOne("EzBill.Domain.Entity.Account", "Account")
                         .WithMany("Events")
                         .HasForeignKey("PaidBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_EVENT_ACCOUNT");
 
                     b.HasOne("EzBill.Domain.Entity.Trip", "Trip")
@@ -335,6 +555,18 @@ namespace EzBill.Infrastructure.Migrations
                     b.Navigation("Event");
                 });
 
+            modelBuilder.Entity("EzBill.Domain.Entity.ForgotPassword", b =>
+                {
+                    b.HasOne("EzBill.Domain.Entity.Account", "Account")
+                        .WithMany("ForgotPasswords")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_ForgotPassword_Account");
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("EzBill.Domain.Entity.PaymentHistory", b =>
                 {
                     b.HasOne("EzBill.Domain.Entity.Account", "FromAccount")
@@ -344,27 +576,29 @@ namespace EzBill.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_PaymentHistory_From_Account");
 
+                    b.HasOne("EzBill.Domain.Entity.Plan", "Plan")
+                        .WithMany("PaymentHistories")
+                        .HasForeignKey("PlanId")
+                        .HasConstraintName("FK_PaymentHistory_Plan");
+
                     b.HasOne("EzBill.Domain.Entity.TaxRefund", "TaxRefund")
-                        .WithMany()
-                        .HasForeignKey("TaxRefundId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("PaymentHistories")
+                        .HasForeignKey("RelatedTaxRefundId")
+                        .HasConstraintName("FK_PaymentHistory_TaxRefund");
 
                     b.HasOne("EzBill.Domain.Entity.Account", "ToAccount")
                         .WithMany("PaymentHistoriesTo")
                         .HasForeignKey("ToAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_PaymentHistory_To_Account");
 
                     b.HasOne("EzBill.Domain.Entity.Trip", "Trip")
                         .WithMany("PaymentHistories")
                         .HasForeignKey("TripId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_PaymentHistory_Trip");
 
                     b.Navigation("FromAccount");
+
+                    b.Navigation("Plan");
 
                     b.Navigation("TaxRefund");
 
@@ -405,13 +639,6 @@ namespace EzBill.Infrastructure.Migrations
 
             modelBuilder.Entity("EzBill.Domain.Entity.TaxRefund", b =>
                 {
-                    b.HasOne("EzBill.Domain.Entity.Event", "Event")
-                        .WithMany("TaxRefunds")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_TaxRefund_Event");
-
                     b.HasOne("EzBill.Domain.Entity.Account", "Account")
                         .WithMany("TaxRefunds")
                         .HasForeignKey("RefundedBy")
@@ -419,9 +646,37 @@ namespace EzBill.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_TaxRefund_Account");
 
+                    b.HasOne("EzBill.Domain.Entity.Trip", "Trip")
+                        .WithMany("TaxRefunds")
+                        .HasForeignKey("TripId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_TaxRefund_Trip");
+
                     b.Navigation("Account");
 
+                    b.Navigation("Trip");
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.TaxRefund_Event", b =>
+                {
+                    b.HasOne("EzBill.Domain.Entity.Event", "Event")
+                        .WithMany("TaxRefund_Events")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_TaxRefund_Event_Event");
+
+                    b.HasOne("EzBill.Domain.Entity.TaxRefund", "TaxRefund")
+                        .WithMany("TaxRefund_Events")
+                        .HasForeignKey("TaxRefundId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_TaxRefund_Event_TaxRefund");
+
                     b.Navigation("Event");
+
+                    b.Navigation("TaxRefund");
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.TaxRefund_Usage", b =>
@@ -478,11 +733,27 @@ namespace EzBill.Infrastructure.Migrations
                     b.Navigation("Trip");
                 });
 
+            modelBuilder.Entity("EzBill.Domain.Entity.UserDeviceToken", b =>
+                {
+                    b.HasOne("EzBill.Domain.Entity.Account", "Account")
+                        .WithMany("UserDeviceTokens")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_UserDeviceToken_Account");
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("EzBill.Domain.Entity.Account", b =>
                 {
+                    b.Navigation("AccountSubscriptions");
+
                     b.Navigation("Event_Use");
 
                     b.Navigation("Events");
+
+                    b.Navigation("ForgotPasswords");
 
                     b.Navigation("PaymentHistoriesFrom");
 
@@ -499,17 +770,30 @@ namespace EzBill.Infrastructure.Migrations
                     b.Navigation("Trip");
 
                     b.Navigation("TripMembers");
+
+                    b.Navigation("UserDeviceTokens");
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.Event", b =>
                 {
                     b.Navigation("Event_Use");
 
-                    b.Navigation("TaxRefunds");
+                    b.Navigation("TaxRefund_Events");
+                });
+
+            modelBuilder.Entity("EzBill.Domain.Entity.Plan", b =>
+                {
+                    b.Navigation("AccountSubscriptions");
+
+                    b.Navigation("PaymentHistories");
                 });
 
             modelBuilder.Entity("EzBill.Domain.Entity.TaxRefund", b =>
                 {
+                    b.Navigation("PaymentHistories");
+
+                    b.Navigation("TaxRefund_Events");
+
                     b.Navigation("TaxRefund_Usages");
                 });
 
@@ -520,6 +804,8 @@ namespace EzBill.Infrastructure.Migrations
                     b.Navigation("PaymentHistories");
 
                     b.Navigation("Settlements");
+
+                    b.Navigation("TaxRefunds");
 
                     b.Navigation("TripMembers");
                 });
