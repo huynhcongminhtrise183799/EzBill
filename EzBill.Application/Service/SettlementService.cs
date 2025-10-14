@@ -44,7 +44,7 @@ namespace EzBill.Application.Service
             if (settlement == null) throw new AppException("Không tìm thấy settlement", 404);
             if (result)
             {
-                var notiResult = await _firebaseService.SendNotiConfirmedAsync(settlement.ToAccountId);
+                var notiResult = await _firebaseService.SendNotiConfirmedAsync(settlement.FromAccountId);
                 if (notiResult == null) throw new AppException("Gửi thông báo thất bại", 500);
 				return true;
 			}
