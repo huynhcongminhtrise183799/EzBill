@@ -127,7 +127,6 @@ namespace EzBill
 			builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
             builder.Services.AddScoped<IAccountSubscriptionsRepository, AccountSubscriptionsRepository>();
             builder.Services.AddScoped<IAccountSubscriptionsService , AccountSubscriptionsService>();
-			builder.Services.AddSingleton(FirebaseMessaging.DefaultInstance);
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -146,6 +145,8 @@ namespace EzBill
 					Credential = GoogleCredential.FromFile("ezbill_firebase.json")
 				});
 			}
+			builder.Services.AddSingleton(FirebaseMessaging.DefaultInstance);
+
 			// Lấy config từ appsettings.json
 			var payosConfig = builder.Configuration.GetSection("PayOS");
 
