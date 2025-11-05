@@ -45,7 +45,7 @@ namespace EzBill.Controllers
 			var paymentData = new PaymentData(
 			orderCode,
 			(int)request.Price,
-			"Thanh toán gói: " + request.PlanName,
+			"Thanh toán gói của Ezbill",
 			items,
 			"ezbill://payment-cancel",  
 			"ezbill://payment-success"   
