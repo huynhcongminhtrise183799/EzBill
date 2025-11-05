@@ -12,6 +12,7 @@ using EzBill.Infrastructure.ExternalService;
 using EzBill.Infrastructure.Repository;
 using EzBill.MiddlewareCustom;
 using FirebaseAdmin;
+using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -126,6 +127,7 @@ namespace EzBill
 			builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
             builder.Services.AddScoped<IAccountSubscriptionsRepository, AccountSubscriptionsRepository>();
             builder.Services.AddScoped<IAccountSubscriptionsService , AccountSubscriptionsService>();
+			builder.Services.AddSingleton(FirebaseMessaging.DefaultInstance);
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
