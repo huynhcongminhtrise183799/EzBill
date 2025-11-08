@@ -43,6 +43,31 @@ namespace EzBill.Infrastructure.Repository
 			return false;
 		}
 
+		public async Task<List<PaymentHistory>> GetAllPaymentHistory()
+		{
+			return await _context.PaymentHistories.Include(p => p.Plan).Include(p => p.FromAccount)
+				.ToListAsync();
+		}
+
+		// Đổi tên hàm một chút để rõ nghĩa hơn (tùy chọn)
+		public Task<List<PaymentHistory>?> GetAllPaymentNearestMonth(int months)
+		{
+			var now = DateTime.UtcNow; // hoặc DateTime.Now nếu bạn muốn theo local time
+			var currentMonthStart = new DateTime(now.Year, now.Month, 1);
+
+			// Tính ngày đầu của mốc "months" tháng trước
+			var startDate = currentMonthStart.AddMonths(-months + 1);
+
+			// Ngày cuối của tháng hiện tại
+			var endDate = currentMonthStart.AddMonths(1).AddDays(-1);
+
+			return _context.PaymentHistories
+				.Where(p => p.PaymentDate.ToDateTime(new TimeOnly(0, 0)) >= startDate &&
+							p.PaymentDate.ToDateTime(new TimeOnly(0, 0)) <= endDate &&
+							p.Status == "COMPLETED") // <-- Thêm điều kiện lọc status
+				.ToListAsync();
+		}
+
 		public async Task<PaymentHistory?> GetByOrderCode(long OrderCode)
 		{
 			return await _context.PaymentHistories.FirstOrDefaultAsync(p => p.OrderCode == OrderCode);

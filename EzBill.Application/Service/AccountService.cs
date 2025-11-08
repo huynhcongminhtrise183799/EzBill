@@ -25,6 +25,12 @@ namespace EzBill.Application.Service
 			_firebaseAuthService = firebaseAuthService;
 		}
 
+		public async Task<int> CountAllCustomer()
+		{
+			var count = await _repo.CountAllCustomer();
+			return count;
+		}
+
 		public async Task<Account?> GetAccountByEmail(string email)
 		{
 			var account = await _repo.FindByEmailAsync(email);

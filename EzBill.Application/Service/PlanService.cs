@@ -17,6 +17,12 @@ namespace EzBill.Application.Service
 		{
 			_planRepository = planRepository;
 		}
+
+		public async Task<int> CountAllPlan()
+		{
+			return await _planRepository.CountAllPlan();
+		}
+
 		public async Task<List<PlanModel>> GetActivePlans()
 		{
 			var plans = await _planRepository.GetActivePlans();

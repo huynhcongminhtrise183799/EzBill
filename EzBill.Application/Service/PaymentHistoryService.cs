@@ -43,9 +43,49 @@ namespace EzBill.Application.Service
 			return await _paymentHistoryRepository.ChangePaymentStatus(OrderCode, status);
 		}
 
+		public async Task<List<PaymentHistoryModel>> GetAll()
+		{
+			var payments = await _paymentHistoryRepository.GetAllPaymentHistory();
+			var paymentModels = payments.Select(p => new PaymentHistoryModel
+			{
+				PaymentHistoryModelId = p.PaymentHistoryId,
+				UserId = p.FromAccount.AccountId,
+				PlanId = (Guid)p.PlanId,
+				Email = p.FromAccount.Email,
+				PlanName = p.Plan.PlanName,
+				Amount = p.Amount,
+				PaymentDate = p.PaymentDate,
+				Status = p.Status
+			}).ToList();
+			return paymentModels;
+
+		}
+
 		public async Task<PaymentHistory?> GetByOrderCode(long OrderCode)
 		{
 			return await _paymentHistoryRepository.GetByOrderCode(OrderCode);
+		}
+
+		public async Task<List<MonthlyPaymentSummary>> GetCompletedMonthlySummary(int months)
+		{
+			// 1. GỌI REPO: Lấy danh sách các Entities
+			var payments = await _paymentHistoryRepository.GetAllPaymentNearestMonth(months);
+
+			// 2. LOGIC & MAP: Thực hiện GroupBy và Map sang Model (DTO)
+			// Đây là LINQ to Objects (chạy trên bộ nhớ của server)
+			var summary = payments
+				.GroupBy(p => new { p.PaymentDate.Year, p.PaymentDate.Month })
+				.Select(g => new MonthlyPaymentSummary
+				{
+					Year = g.Key.Year,
+					Month = g.Key.Month,
+					TotalAmount = g.Sum(p => p.Amount) // <-- THAY THẾ 'Amount'
+				})
+				.OrderBy(s => s.Year)
+				.ThenBy(s => s.Month)
+				.ToList(); // Dùng .ToList() vì 'payments' đã là List in-memory
+
+			return summary;
 		}
 
 		public async Task<string> GetPaymentStatusByOrderCode(long OrderCode)

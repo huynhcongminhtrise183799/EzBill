@@ -13,5 +13,7 @@ namespace EzBill.Application.IService
 		Task<List<PlanModel>> GetActivePlans();
 		Task<Plan?> GetPlanById(Guid planId);
 
+		Task<int> CountAllPlan();
+
 	}
 }

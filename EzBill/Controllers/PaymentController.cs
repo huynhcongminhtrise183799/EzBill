@@ -19,14 +19,16 @@ namespace EzBill.Controllers
 		private readonly IPlanService _planService;
 		private const string COMPLEDTED_PAYMENT = "COMPLETED";
 		private const string FAILED_PAYMENT = "FAILED";
+		private readonly IPaymentNotifier _paymentNotifier; // <-- Inject interface
 
-		public PaymentController(PayOS payOS, IPaymentHistoryService paymentHistoryService, IAccountSubscriptionsService service, IAccountService accountService, IPlanService planService)
+		public PaymentController(PayOS payOS, IPaymentHistoryService paymentHistoryService, IAccountSubscriptionsService service, IAccountService accountService, IPlanService planService, IPaymentNotifier paymentNotifier)
 		{
 			_payOS = payOS;
 			_paymentHistoryService = paymentHistoryService;
 			_service = service;
 			_accountService = accountService;
 			_planService = planService;
+			_paymentNotifier = paymentNotifier;
 		}
 
 		[HttpPost("buy-plan")]
@@ -67,6 +69,7 @@ namespace EzBill.Controllers
 				{
 					return BadRequest(new { error = "Tạo lịch sử thanh toán thất bại" });
 				}
+				await _paymentNotifier.NotifyNewPaymentAsync();
 				var createResult = await _payOS.createPaymentLink(paymentData);
 
 				return Ok(new
@@ -133,6 +136,7 @@ namespace EzBill.Controllers
 					{
 						return BadRequest(new { code = "-1", message = "Update account role failed" });
 					}
+
 				}
 				else
 				{
@@ -141,6 +145,7 @@ namespace EzBill.Controllers
 					var updateResult = await _paymentHistoryService.ChangePaymentStatus(orderCode, FAILED_PAYMENT);
 
 				}
+				await _paymentNotifier.NotifyNewPaymentAsync();
 
 				return Ok(new { code = "00", message = "processed" });
 			}
@@ -160,7 +165,13 @@ namespace EzBill.Controllers
 			{
 				status = payment
 			});
-		}	
+		}
+		[HttpGet]
+		public async Task<IActionResult> GetAllPayments()
+		{
+			var payments = await _paymentHistoryService.GetAll();
+			return Ok(payments);
+		}
 
 
 	}

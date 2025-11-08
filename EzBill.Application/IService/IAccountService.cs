@@ -29,5 +29,7 @@ namespace EzBill.Application.IService
 
         Task<bool> UpdateAccountRole(Guid accountId, string role);
 
+        Task<int> CountAllCustomer();   
+
 	}
 }
