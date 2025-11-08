@@ -156,5 +156,12 @@ namespace EzBill.Infrastructure.Repository
 			await _context.SaveChangesAsync();
 			return true;
 		}
+
+		public Task<int> CountAllCustomer()
+		{
+			var count = _context.Accounts
+				.CountAsync(a => a.Role == AccountRole.FREE_USER.ToString() || a.Role == AccountRole.BASIC_USER.ToString() || a.Role == AccountRole.VIP_USER.ToString() || a.Role == AccountRole.DAILY_USER.ToString());
+			return count;
+		}
 	}
 }

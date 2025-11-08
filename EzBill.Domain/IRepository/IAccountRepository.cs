@@ -33,6 +33,8 @@ namespace EzBill.Domain.IRepository
 
         Task<bool> UpdateAccountRole(Guid accountId, string role);
 
+		Task<int> CountAllCustomer();
+
 
 	}
 }

@@ -16,5 +16,8 @@ namespace EzBill.Application.IService
 
 		Task<string> GetPaymentStatusByOrderCode(long OrderCode);
 
+		Task<List<PaymentHistoryModel>> GetAll();
+		Task<List<MonthlyPaymentSummary>> GetCompletedMonthlySummary(int months);
+
 	}
 }

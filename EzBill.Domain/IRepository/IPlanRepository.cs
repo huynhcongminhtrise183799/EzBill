@@ -11,5 +11,7 @@ namespace EzBill.Domain.IRepository
 	{
 		Task<List<Plan>> GetActivePlans();
 		Task<Plan?> GetPlanById(Guid planId);
+
+		Task<int> CountAllPlan();
 	}
 }

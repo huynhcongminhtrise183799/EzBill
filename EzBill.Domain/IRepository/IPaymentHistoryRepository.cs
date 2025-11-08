@@ -14,5 +14,9 @@ namespace EzBill.Domain.IRepository
 		Task<bool> ChangePaymentStatus(long OrderCode, string status);
 
 		Task<PaymentHistory?> GetByOrderCode(long OrderCode);
+
+		Task<List<PaymentHistory>> GetAllPaymentHistory();
+		Task<List<PaymentHistory>?> GetAllPaymentNearestMonth(int months);
+
 	}
 }

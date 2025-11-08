@@ -16,6 +16,12 @@ namespace EzBill.Infrastructure.Repository
 		{
 			_dbContext = dbContext;
 		}
+
+		public async Task<int> CountAllPlan()
+		{
+			return await _dbContext.Plans.CountAsync();
+		}
+
 		public async Task<List<Plan>> GetActivePlans()
 		{
 			return await _dbContext.Plans

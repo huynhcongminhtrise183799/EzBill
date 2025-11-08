@@ -127,6 +127,7 @@ namespace EzBill
 			builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
             builder.Services.AddScoped<IAccountSubscriptionsRepository, AccountSubscriptionsRepository>();
             builder.Services.AddScoped<IAccountSubscriptionsService , AccountSubscriptionsService>();
+			builder.Services.AddScoped<IPaymentNotifier, PaymentSignalRNotifier>();
 			builder.Services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
@@ -175,9 +176,10 @@ namespace EzBill
 			app.UseAuthentication();
             app.UseAuthorization();
 
-
-            app.MapControllers();
 			app.MapHub<ChatHub>("/chatHub");
+			app.MapHub<PaymentHub>("/paymentHub");
+			app.MapControllers();
+			
 			app.Run();
         }
     }
